@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>พื้นที่แห่งการเรียนรู้ | EduSpace</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <header class="top-header">
+        <div class="header-logo">
+            <img src="https://api.dicebear.com/9.x/shapes/svg?seed=EduSpace" alt="Logo" class="logo-icon">
+            <span class="logo-text c5-text">พื้นที่แห่งการเรียนรู้</span>
+        </div>
+
+        <div class="header-center-nav">
+            <div class="nav-menu" id="mainNavMenu">
+                <a href="#" class="active" data-target="hero"><i class="fas fa-rocket"></i> วันนี้</a>
+                <a href="#portfolioSection" data-target="portfolio"><i class="fas fa-palette"></i> ผลงาน</a>
+                <a href="#filesSection" data-target="files"><i class="fas fa-folder-open"></i> ไฟล์ต่างๆ</a>
+            </div>
+            <div class="nav-actions">
+                <button class="icon-btn" id="searchBtn"><i class="fas fa-search"></i></button>
+                <button class="icon-btn" id="mobile-menu-btn"><i class="fas fa-bars"></i></button>
+            </div>
+        </div>
+
+        <button onclick="openLoginModal()" class="btn-signin" style="border: none; cursor: pointer; font-family: var(--font-main);">เข้าสู่ระบบ</button>
+    </header>
+
+    <section class="hero-section" id="heroSection">
+        <div class="hero-content">
+            <h1 class="soothing-text" id="heroHeading">ยกระดับการเรียนรู้สู่อนาคต</h1>
+            <p class="soothing-subtext" id="heroSubtext">ปลดล็อกศักยภาพ สร้างสรรค์นวัตกรรม<br>คู่คิดในการเดินทางทางการศึกษาของนักเรียนทุกคน</p>
+        </div>
+
+        <div class="hero-characters">
+            <button class="nav-arrow left-arrow"><i class="fas fa-chevron-left"></i></button>
+            <div class="character-group">
+                <img src="https://api.dicebear.com/9.x/bottts/svg?seed=StudentBoy&backgroundColor=transparent" alt="นักเรียนชาย" class="char-img">
+                <img src="https://api.dicebear.com/9.x/bottts/svg?seed=8985&backgroundColor=transparent" alt="คุณครู" class="char-img char-center">
+                <img src="https://api.dicebear.com/9.x/bottts/svg?seed=StudentGirl&backgroundColor=transparent" alt="นักเรียนหญิง" class="char-img">
+            </div>
+            <button class="nav-arrow right-arrow"><i class="fas fa-chevron-right"></i></button>
+        </div>
+    </section>
+
+    <div class="toolbar-divider">
+        <div class="toolbar-line"></div>
+        <div class="toolbar-icons">
+            <div class="t-icon bg-c3"><i class="fas fa-star"></i></div>
+            <div class="t-icon bg-c10"><i class="fas fa-code"></i></div>
+            <div class="t-icon bg-c4"><i class="fas fa-cubes"></i></div>
+            <div class="t-icon bg-c9"><i class="fas fa-laptop-code"></i></div>
+            <div class="t-icon bg-c6"><i class="fas fa-book"></i></div>
+        </div>
+    </div>
+
+    <section class="profile-section" id="profileSection">
+        <div class="profile-container">
+            <div class="profile-card">
+                <div class="profile-info-side">
+                    <h2 class="profile-tag">ผู้จัดทำระบบ</h2>
+                    <h1 id="profName" class="c5-text">— ชื่อ-นามสกุล —</h1>
+                    <h3 id="profPosition" class="prof-sub">— ตำแหน่ง —</h3>
+                    
+                    <div class="profile-details-grid">
+                        <div class="detail-item">
+                            <i class="fas fa-history c4-text"></i>
+                            <div>
+                                <strong>ประวัติโดยย่อ</strong>
+                                <p id="profBio">—</p>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-briefcase c1-text"></i>
+                            <div>
+                                <strong>หน้าที่การปฏิบัติงาน</strong>
+                                <p id="profJob">—</p>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-star c3-text"></i>
+                            <div>
+                                <strong>ข้อมูลอื่นๆ</strong>
+                                <p id="profOthers">—</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-image-side">
+                    <div class="prof-img-frame">
+                        <div class="prof-img-bg bg-c5-light">
+                            <img id="profImg" src="https://api.dicebear.com/9.x/avataaars/svg?seed=Nattapong" alt="Profile">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="portfolio-section" id="portfolioSection">
+        
+        <div class="portfolio-banner-premium">
+            <div class="glow-orb orb-1"></div>
+            <div class="glow-orb orb-2"></div>
+            
+            <i class="fas fa-rocket floating-icon icon-rocket"></i>
+            <i class="fas fa-atom floating-icon icon-atom"></i>
+            <i class="fas fa-star floating-icon icon-star"></i>
+
+            <div class="banner-content-glass">
+                <span class="banner-badge">✨ Showcase</span>
+                <h2>แกลลอรีผลงานและ สื่อการสอน</h2>
+                <p>รวมคลังความรู้และนวัตกรรมการเรียนรู้สร้างสรรค์ โดยคุณครูและนักเรียน</p>
+            </div>
+        </div>
+        
+        <div class="cards-container" id="portfolioCards">
+            <div class="cards-loading">
+                <div class="cards-spinner"></div>
+                กำลังโหลดผลงาน...
+            </div>
+        </div>
+    </section>
+
+    <section class="files-section" id="filesSection">
+        <div class="files-banner">
+            <div class="files-banner-content">
+                <h2>ไฟล์ต่างๆ และ เอกสาร</h2>
+                <p>คลังแสงสื่อการสอน ใบงาน และเอกสารที่พร้อมให้ดาวน์โหลด</p>
+            </div>
+            <img src="https://api.dicebear.com/9.x/fun-emoji/svg?seed=StudentBoy&backgroundColor=transparent" class="banner-char char-left" alt="Student">
+            <img src="https://api.dicebear.com/9.x/fun-emoji/svg?seed=TeacherStar&backgroundColor=transparent" class="banner-char char-top" alt="Teacher">
+            <img src="https://api.dicebear.com/9.x/fun-emoji/svg?seed=StudentGirl&backgroundColor=transparent" class="banner-char char-right" alt="Student">
+        </div>
+
+        <div class="files-tabs" id="filesTabs">
+            <button class="files-tab-btn active" data-cat="">ทั้งหมด</button>
+        </div>
+
+        <div class="files-grid-public" id="publicFileGrid">
+            <div class="cards-loading" style="grid-column:1/-1;">
+                <div class="cards-spinner"></div>
+                กำลังโหลดไฟล์...
+            </div>
+        </div>
+    </section>
+
+
+    <section class="map-section" id="mapSection">
+        <div class="map-header">
+            <h2><i class="fas fa-map-marked-alt"></i> แผนที่การเยี่ยมบ้าน</h2>
+            <p>พิกัดและเส้นทางการเยี่ยมบ้านนักเรียน</p>
+            <button id="toggleMapBtn" class="btn-toggle-map">
+                <i class="fas fa-chevron-down"></i> เปิดดูแผนที่
+            </button>
+        </div>
+        
+        <div class="map-container collapsed" id="homeVisitMap" style="padding: 0; background: #fff;">
+            <div id="frontMapCanvas" style="width: 100%; height: 100%; min-height: 450px; z-index: 1;"></div>
+        </div>
+    </section>
+
+
+    <div class="modal-overlay" id="modalPortDetail">
+        <div class="modal-box modal-detail-box">
+            <button class="modal-close-float" onclick="closeModal('modalPortDetail')"><i class="fas fa-times"></i></button>
+            
+            <div class="detail-layout">
+                <div class="detail-img-col">
+                    <img id="detailImg" src="" alt="Portfolio Image">
+                </div>
+                
+                <div class="detail-content-col">
+                    <div id="detailBadge" class="badge"></div>
+                    <h3 id="detailTitle">ชื่อผลงาน</h3>
+                    <p id="detailDesc" class="short-desc"></p>
+                    
+                    <hr class="detail-divider">
+                    
+                    <div id="detailLongDesc" class="long-desc"></div>
+                    
+                    <div class="detail-actions">
+                        <a href="#" id="detailBtn1" class="btn-primary" target="_blank">
+                            <i class="fas fa-external-link-alt"></i> <span id="detailBtn1Text">ดูรายละเอียด</span>
+                        </a>
+                        <a href="#" id="detailBtn2" class="btn-secondary" target="_blank">
+                            <i class="fas fa-images"></i> <span id="detailBtn2Text">แกลลอรี</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-brand-minimal">
+                <h3 class="c1-text">พื้นที่แห่งการเรียนรู้</h3>
+                <p>แพลตฟอร์มเพื่อการพัฒนาศักยภาพผู้เรียนสู่อนาคต</p>
+                <div class="contact-info">
+                    <p><i class="fas fa-envelope"></i> contact@school.ac.th</p>
+                </div>
+            </div>
+            <div class="footer-links-minimal">
+                <div class="social-icons">
+                    <i class="fab fa-facebook"></i>
+                    <i class="fab fa-youtube"></i>
+                    <i class="fab fa-line"></i>
+                </div>
+                <div class="device-icons">
+                    <i class="fas fa-desktop"></i>
+                    <i class="fab fa-apple"></i>
+                    <i class="fab fa-android"></i>
+                </div>
+            </div>
+            <div class="footer-mascot">
+                <img src="https://api.dicebear.com/9.x/fun-emoji/svg?seed=Smart&backgroundColor=transparent" alt="Mascot">
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Nattapong</p>
+        </div>
+    </footer>
+
+
+    <div class="modal-overlay" id="loginModal">
+    <div class="modal-box modal-detail-box" style="max-width: 400px !important; padding: 40px !important; text-align: center;">
+        <button class="modal-close-float" onclick="closeLoginModal()"><i class="fas fa-times"></i></button>
+        <h2 style="margin-bottom: 25px; color: var(--c4-blue); font-weight: 800;"><i class="fas fa-lock"></i> เข้าสู่ระบบแอดมิน</h2>
+        <form id="loginForm" style="display: flex; flex-direction: column; gap: 15px;">
+            <input type="email" id="adminEmail" placeholder="อีเมล" required style="padding: 15px; border: 1px solid #e2e8f0; border-radius: 12px; outline: none; font-family: var(--font-main);">
+            <input type="password" id="adminPassword" placeholder="รหัสผ่าน" required style="padding: 15px; border: 1px solid #e2e8f0; border-radius: 12px; outline: none; font-family: var(--font-main);">
+            <p id="loginError" style="color: #ff6e91; font-size: 0.85rem; display: none; margin: 0;">อีเมลหรือรหัสผ่านไม่ถูกต้อง</p>
+            <button type="submit" class="btn-signin" style="width: 100%; margin-top: 15px; cursor: pointer; border: none; padding: 15px; background: linear-gradient(135deg, var(--c4-blue) 0%, var(--c5-indigo) 100%); color: white;">เข้าสู่ระบบ</button>
+        </form>
+    </div>
+    </div>
+
+
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

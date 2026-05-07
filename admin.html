@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจัดการหลังบ้าน | EduSpace</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        /* ปิดการล้างค่า CSS เดิม เพื่อไม่ให้หน้าแอดมินพัง */
+        tailwind.config = { corePlugins: { preflight: false } };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <link rel="stylesheet" href="admin.css">
+    <style>
+        /* Portfolio & Files Admin Styles */
+        .portfolio-list { margin-top: 30px; }
+        .portfolio-item-row { background: white; border-radius: 16px; padding: 20px 25px; display: flex; align-items: center; gap: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); margin-bottom: 15px; transition: all 0.3s; border-left: 4px solid var(--c5-indigo); }
+        .portfolio-item-row:hover { transform: translateX(5px); box-shadow: 0 8px 25px rgba(133,114,255,0.12); }
+        .portfolio-thumb { width: 70px; height: 70px; border-radius: 12px; object-fit: cover; background: #f1f5f9; flex-shrink: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .portfolio-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .portfolio-item-info { flex: 1; }
+        .portfolio-item-info h4 { font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
+        .portfolio-item-info p { font-size: 0.82rem; color: var(--text-muted); }
+        .badge { padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; flex-shrink: 0; }
+        .badge-c2 { background: rgba(174,98,227,0.15); color: var(--c2-purple); }
+        .btn-icon { width: 36px; height: 36px; border-radius: 10px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; transition: all 0.2s; flex-shrink: 0; }
+        .btn-del { background: rgba(255,110,145,0.1); color: var(--c7-pink); }
+        .btn-del:hover { background: var(--c7-pink); color: white; }
+        .btn-edit { background: rgba(96,176,255,0.1); color: var(--c4-blue); margin-right: 5px; }
+        .btn-edit:hover { background: var(--c4-blue); color: white; }
+
+        .files-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
+        .search-box { display: flex; align-items: center; gap: 10px; background: white; padding: 10px 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); border: 1px solid #e2e8f0; }
+        .search-box input { border: none; outline: none; font-family: var(--font-main); font-size: 0.95rem; width: 200px; }
+        .files-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .file-card { background: white; border-radius: 16px; padding: 20px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.04); transition: all 0.3s; cursor: pointer; position: relative; border: 2px solid transparent; }
+        .file-card:hover { transform: translateY(-5px); border-color: var(--c5-indigo); box-shadow: 0 12px 30px rgba(133,114,255,0.15); }
+        .file-card-icon { font-size: 2.5rem; margin-bottom: 12px; }
+        .file-card-name { font-size: 0.85rem; font-weight: 600; word-break: break-all; margin-bottom: 5px; }
+        .file-card-size { font-size: 0.75rem; color: var(--text-muted); }
+        .file-card-actions { position: absolute; top: 10px; right: 10px; display: none; gap: 5px; }
+        .file-card:hover .file-card-actions { display: flex; }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(8px); z-index: 999; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .modal-overlay.open { display: flex; }
+        .modal-box { background: white; border-radius: 24px; padding: 0 40px 40px 40px; width: 100%; max-width: 650px; box-shadow: 0 25px 50px rgba(0,0,0,0.2); animation: modalIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275); max-height: 85vh; overflow-y: auto; position: relative; }
+        .modal-box::-webkit-scrollbar { width: 6px; }
+        .modal-box::-webkit-scrollbar-track { background: transparent; margin: 20px 0; }
+        .modal-box::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; position: sticky; top: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 30px 0 20px 0; z-index: 10; border-bottom: 1px solid #f1f5f9; }
+        .modal-close { background: #f1f5f9; border: none; width: 38px; height: 38px; border-radius: 50%; cursor: pointer; font-size: 1.1rem; color: var(--text-muted); transition: all 0.3s; }
+        .modal-close:hover { background: var(--c7-pink); color: white; transform: rotate(90deg); }
+        .color-picker-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+        .color-dot { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; transition: transform 0.2s; border: 3px solid transparent; }
+        .color-dot.selected { border-color: var(--text-main); transform: scale(1.15); }
+        .upload-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .upload-tab-btn { padding: 8px 18px; border-radius: 20px; border: none; font-family: var(--font-main); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; background: #f1f5f9; color: var(--text-muted); }
+        .upload-tab-btn.active { background: var(--c5-indigo); color: white; }
+        .upload-tab-pane { display: none; }
+        .upload-tab-pane.active { display: block; }
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+        .empty-state i { font-size: 3rem; margin-bottom: 15px; opacity: 0.4; }
+        .loading-row { display: flex; align-items: center; justify-content: center; padding: 40px; gap: 12px; color: var(--text-muted); }
+        .spinner { width: 24px; height: 24px; border: 3px solid #e2e8f0; border-top-color: var(--c5-indigo); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .img-preview-box { width: 100%; height: 160px; border-radius: 12px; background: #f1f5f9; margin-top: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+        .img-preview-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .img-preview-label { font-size: 0.8rem; color: var(--text-muted); margin-top: 6px; text-align: center; }
+        .confirm-btns { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-confirm-del { flex: 1; padding: 12px; border-radius: 12px; border: none; background: var(--c7-pink); color: white; font-family: var(--font-main); font-weight: 600; cursor: pointer; }
+        .btn-cancel { flex: 1; padding: 12px; border-radius: 12px; border: none; background: #f1f5f9; color: var(--text-muted); font-family: var(--font-main); font-weight: 600; cursor: pointer; }
+        .icon-pdf { color: #ef4444; } .icon-doc { color: #3b82f6; } .icon-img { color: var(--c2-purple); } .icon-vid { color: var(--c7-pink); } .icon-zip { color: var(--c3-yellow); } .icon-other { color: var(--text-muted); }
+        .section-subtitle { color: var(--text-muted); font-size: 0.9rem; margin-top: -15px; margin-bottom: 25px; }
+    </style>
+</head>
+<body>
+
+<div class="admin-container">
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-user-shield c5-text"></i>
+            <h2>Admin Panel</h2>
+            <button id="close-sidebar" class="mobile-only"><i class="fas fa-times"></i></button>
+        </div>
+        <ul class="nav-links">
+            <li class="active" data-tab="dashboard"><i class="fas fa-th-large"></i> ภาพรวม</li>
+            <li data-tab="banner"><i class="fas fa-images"></i> แบนเนอร์</li>
+            <li data-tab="profile"><i class="fas fa-id-card"></i> โปรไฟล์</li>
+            <li data-tab="portfolio"><i class="fas fa-palette"></i> ผลงาน</li>
+            <li data-tab="files"><i class="fas fa-folder-open"></i> ไฟล์</li>
+            
+            <hr style="margin: 15px 20px; border: 0; border-top: 1px solid #e2e8f0;">
+            
+            <li id="homeVisitToggle" class="menu-group-header">
+                <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                    <span><i class="fas fa-house-user"></i> ระบบเยี่ยมบ้าน</span>
+                    <i class="fas fa-chevron-down toggle-icon" id="visitChevron"></i>
+                </div>
+            </li>
+
+            <div class="sub-menu-container collapsed" id="homeVisitSubMenu">
+                <li data-tab="visit_dashboard"><i class="fas fa-chart-line"></i> สถิติเยี่ยมบ้าน</li>
+                <li data-tab="students"><i class="fas fa-users"></i> ข้อมูลนักเรียน</li>
+                <li data-tab="visit"><i class="fas fa-home"></i> บันทึกเยี่ยมบ้าน</li>
+                <li data-tab="screening"><i class="fas fa-exclamation-triangle"></i> คัดกรองความเสี่ยง</li>
+                <li data-tab="map"><i class="fas fa-map-marked-alt"></i> แผนที่ GPS</li>
+                <li data-tab="reports"><i class="fas fa-file-pdf"></i> รายงาน PDF</li>
+                <li data-tab="visit_settings"><i class="fas fa-cogs"></i> ตั้งค่าระบบเยี่ยมบ้าน</li>
+            </div>
+        </ul>
+        <div class="sidebar-footer">
+            <button onclick="logoutAdmin()" class="btn-back" style="width: 100%; border: none; cursor: pointer; font-family: var(--font-main);"><i class="fas fa-sign-out-alt"></i> ออกจากระบบ</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div style="display:flex;align-items:center;gap:15px;">
+                <button id="menu-toggle"><i class="fas fa-bars"></i></button>
+                <span class="topbar-title" id="topbarTitle">ภาพรวมระบบ</span>
+            </div>
+            <div class="user-profile">
+                <div class="user-info" style="text-align:right;">
+                    <div style="font-weight:700;font-size:0.9rem;">คุณครูณัฐพงศ์</div>
+                    <div style="font-size:0.75rem;color:var(--text-muted);">ผู้ดูแลระบบ</div>
+                </div>
+                <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Nattapong" alt="Admin">
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+
+            <section id="dashboard" class="tab-content active">
+                <h2 class="section-title">ภาพรวมระบบ EduSpace</h2>
+                <p class="section-subtitle" style="margin-bottom: 30px;">สรุปสถิติข้อมูลผลงานและเอกสารภายในระบบทั้งหมด</p>
+                
+                <div class="stats-grid" style="grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));">
+                    <div class="stat-card-admin bg-c2">
+                        <i class="fas fa-palette"></i>
+                        <div class="stat-info">
+                            <h3 id="stat-portfolio">0</h3>
+                            <p>ผลงานและสื่อการสอน</p>
+                        </div>
+                    </div>
+                    <div class="stat-card-admin bg-c4">
+                        <i class="fas fa-folder-open"></i>
+                        <div class="stat-info">
+                            <h3 id="stat-files">0</h3>
+                            <p>ไฟล์และเอกสารทั้งหมด</p>
+                        </div>
+                    </div>
+                    <div class="stat-card-admin bg-c1">
+                        <i class="fas fa-file-pdf"></i>
+                        <div class="stat-info">
+                            <h3 id="stat-docs">0</h3>
+                            <p>เอกสาร (PDF, Word)</p>
+                        </div>
+                    </div>
+                    <div class="stat-card-admin bg-c7">
+                        <i class="fas fa-photo-video"></i>
+                        <div class="stat-info">
+                            <h3 id="stat-media">0</h3>
+                            <p>สื่อมัลติมีเดีย (รูป, วิดีโอ)</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="banner" class="tab-content">
+                <h2 class="section-title">จัดการแบนเนอร์หน้าแรก</h2>
+                <form id="bannerForm" class="form-card">
+                    <div class="input-group">
+                        <label>หัวข้อหลัก (Heading)</label>
+                        <input type="text" id="bannerHeading" placeholder="ยกระดับการเรียนรู้สู่อนาคต">
+                    </div>
+                    <div class="input-group">
+                        <label>ข้อความรอง (Subtext)</label>
+                        <textarea id="bannerSubtext" rows="3"></textarea>
+                    </div>
+                    <div class="input-group">
+                        <label>รูปภาพพื้นหลัง Hero</label>
+                        <div class="upload-tabs">
+                            <button type="button" class="upload-tab-btn active" data-pane="url-pane">ใส่ลิงก์ URL</button>
+                            <button type="button" class="upload-tab-btn" data-pane="file-pane">อัปโหลดไฟล์</button>
+                            <button type="button" class="upload-tab-btn" data-pane="none-pane">ไม่มีรูป</button>
+                        </div>
+                        <div id="url-pane" class="upload-tab-pane active">
+                            <input type="text" id="bannerImageUrl" placeholder="https://example.com/image.jpg">
+                        </div>
+                        <div id="file-pane" class="upload-tab-pane">
+                            <div class="file-drop-area bg-c7-light">
+                                <i class="fas fa-cloud-upload-alt c7-text"></i>
+                                <p id="bannerFileName">ลากไฟล์มาวาง หรือ คลิกเพื่อเลือกภาพ</p>
+                                <input type="file" id="bannerFile" accept="image/*">
+                            </div>
+                        </div>
+                        <div id="none-pane" class="upload-tab-pane"><p style="color:var(--text-muted);padding:15px 0;">จะใช้พื้นหลังค่าเริ่มต้น</p></div>
+                        <div class="img-preview-box" id="bannerPreviewBox"><i class="fas fa-image placeholder-icon"></i></div>
+                    </div>
+                    <button type="submit" id="btnSaveBanner" class="btn-submit bg-c5"><i class="fas fa-save"></i> บันทึกแบนเนอร์</button>
+                </form>
+            </section>
+
+            <section id="profile" class="tab-content">
+                <h2 class="section-title">จัดการข้อมูลส่วนตัว</h2>
+                <form id="profileForm" class="form-card">
+                    <div class="input-group"><label>ชื่อ-นามสกุล</label><input type="text" id="profInputName"></div>
+                    <div class="input-group"><label>ตำแหน่ง</label><input type="text" id="profInputPosition"></div>
+                    <div class="input-group"><label>ประวัติโดยย่อ</label><textarea id="profInputBio" rows="3"></textarea></div>
+                    <div class="input-group"><label>หน้าที่การปฏิบัติงาน</label><textarea id="profInputJob" rows="3"></textarea></div>
+                    <div class="input-group"><label>ข้อมูลอื่นๆ</label><textarea id="profInputOthers" rows="3"></textarea></div>
+                    <div class="input-group">
+                        <label>รูปภาพโปรไฟล์</label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="text" id="profInputImageUrl" placeholder="https://..." style="flex: 1; margin-bottom: 0;">
+                            <input type="file" id="profUploadFile" accept="image/*" style="display: none;">
+                            <button type="button" id="btnProfUpload" class="bg-c4" style="padding: 12px 20px; border: none; border-radius: 12px; color: white; cursor: pointer; font-weight: 600;"><i class="fas fa-cloud-upload-alt"></i> อัปโหลดรูป</button>
+                        </div>
+                        <small id="profUploadStatus" style="color: var(--c5-indigo); margin-top: 8px; display: block; font-weight: 600;"></small>
+                    </div>
+                    <button type="submit" class="btn-submit bg-c5"><i class="fas fa-save"></i> บันทึกโปรไฟล์</button>
+                </form>
+            </section>
+
+            <section id="portfolio" class="tab-content">
+                <h2 class="section-title">จัดการผลงาน</h2>
+                <div style="display:flex;gap:15px;margin-bottom:25px;flex-wrap:wrap;">
+                    <button id="btnAddPortfolio" class="btn-submit bg-c2" style="width:auto;padding:12px 25px;"><i class="fas fa-plus"></i> เพิ่มผลงานใหม่</button>
+                    <div class="search-box"><i class="fas fa-search"></i><input type="text" id="portSearch" placeholder="ค้นหาผลงาน..."></div>
+                </div>
+                <div id="portList"><div class="loading-row"><div class="spinner"></div> กำลังโหลดข้อมูล...</div></div>
+            </section>
+
+            <section id="files" class="tab-content">
+                <h2 class="section-title">จัดการไฟล์</h2>
+                <div class="files-header">
+                    <button id="btnAddFile" class="btn-submit bg-c4" style="width:auto;padding:12px 25px;"><i class="fas fa-upload"></i> อัปโหลดไฟล์ใหม่</button>
+                    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                        <div class="search-box"><i class="fas fa-search"></i><input type="text" id="fileSearch" placeholder="ค้นหาไฟล์..."></div>
+                        <select id="fileTypeFilter" style="padding:10px 15px;border:1px solid #e2e8f0;border-radius:12px;outline:none;">
+                            <option value="">ทุกประเภท</option><option value="pdf">PDF</option><option value="image">รูปภาพ</option><option value="video">วิดีโอ</option><option value="document">เอกสาร</option><option value="other">อื่นๆ</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="fileGrid" class="files-grid"><div class="loading-row" style="grid-column:1/-1"><div class="spinner"></div> กำลังโหลดข้อมูล...</div></div>
+            </section>
+
+            <section id="visit_dashboard" class="tab-content space-y-6">
+                <div><h2 class="font-semibold text-2xl text-slate-900 mb-1" style="font-family:'Kanit';">ภาพรวมการเยี่ยมบ้าน</h2><p class="text-slate-500 text-sm">สถิติการเยี่ยมบ้านนักเรียนทั้งหมด</p></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="stat-card safe"><div class="flex items-center justify-between mb-3"><span class="text-slate-500 text-xs font-semibold tracking-wider">นักเรียนทั้งหมด</span> <i data-lucide="users" class="w-4 h-4 text-teal-600"></i></div><div id="statTotal" class="text-3xl font-bold text-slate-900">0</div></div>
+                    <div class="stat-card"><div class="flex items-center justify-between mb-3"><span class="text-slate-500 text-xs font-semibold tracking-wider">เยี่ยมแล้ว</span> <i data-lucide="check-circle" class="w-4 h-4 text-sky-500"></i></div><div id="statVisited" class="text-3xl font-bold text-slate-900">0</div></div>
+                    <div class="stat-card warning"><div class="flex items-center justify-between mb-3"><span class="text-slate-500 text-xs font-semibold tracking-wider">เฝ้าระวัง</span> <i data-lucide="alert-circle" class="w-4 h-4 text-amber-500"></i></div><div id="statWarning" class="text-3xl font-bold text-slate-900">0</div></div>
+                    <div class="stat-card urgent"><div class="flex items-center justify-between mb-3"><span class="text-slate-500 text-xs font-semibold tracking-wider">เร่งด่วน</span> <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-500"></i></div><div id="statUrgent" class="text-3xl font-bold text-slate-900">0</div></div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-white rounded-2xl p-6" style="box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
+                        <h3 class="font-semibold text-lg text-slate-900 mb-4" style="font-family:'Kanit';">ประวัติการเยี่ยมบ้านล่าสุด</h3>
+                        <div id="recentVisits" class="space-y-3"></div>
+                    </div>
+                    <div class="bg-teal-50 rounded-2xl p-6 border border-teal-100" style="box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
+                        <h3 class="font-semibold text-lg text-teal-900 mb-4" style="font-family:'Kanit';">📊 สรุปสถิติย่อ</h3>
+                        <div class="space-y-4 text-sm">
+                            <div class="flex justify-between items-center bg-white p-3 rounded-lg"><span class="text-slate-600">อัตราการเยี่ยมแล้ว</span> <span id="visitRate" class="font-bold text-teal-600 text-lg">0%</span></div>
+                            <div class="flex justify-between items-center bg-white p-3 rounded-lg"><span class="text-slate-600">คะแนนความเสี่ยงเฉลี่ย</span> <span id="avgRisk" class="font-bold text-amber-600 text-lg">0</span></div>
+                            <div class="flex justify-between items-center bg-white p-3 rounded-lg"><span class="text-slate-600">ต้องการความช่วยเหลือ</span> <span id="needsHelp" class="font-bold text-rose-600 text-lg">0 คน</span></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="students" class="tab-content space-y-6">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div><h2 class="font-semibold text-2xl text-slate-900 mb-1" style="font-family:'Kanit';">รายชื่อนักเรียน</h2></div>
+                    <button onclick="openStudentForm()" class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2 transition shadow-sm border-none cursor-pointer"><i data-lucide="plus" class="w-4 h-4"></i> เพิ่มนักเรียน </button>
+                </div>
+                <div class="relative">
+                    <i data-lucide="search" class="w-5 h-5 absolute left-3 top-3 text-slate-400"></i>
+                    <input id="studentSearch" type="text" placeholder="ค้นหาชื่อ, เลขประจำตัว หรือชั้นเรียน..." class="w-full border border-slate-200 bg-white rounded-xl pl-10 pr-4 py-3 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-100 outline-none" oninput="filterStudents()">
+                </div>
+                <div id="studentList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+            </section>
+
+            <section id="studentForm" class="tab-content">
+                <button onclick="showPage('students')" class="text-sm text-teal-600 hover:text-teal-700 font-medium mb-6 flex items-center gap-1 bg-transparent border-none cursor-pointer"><i data-lucide="arrow-left" class="w-4 h-4"></i> ย้อนกลับ </button>
+                <h2 id="sf_title" class="font-semibold text-2xl text-slate-900 mb-6" style="font-family:'Kanit';">เพิ่มนักเรียนใหม่</h2>
+                <form id="studentDataForm" class="bg-white rounded-2xl border border-slate-100 p-6 md:p-8 space-y-6 max-w-3xl" style="box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
+                    <input type="hidden" id="sf_backendId">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div><label class="block text-sm font-medium text-slate-700 mb-2">ชื่อ-สกุล *</label> <input id="sf_name" required class="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm bg-slate-50 outline-none"></div>
+                        <div><label class="block text-sm font-medium text-slate-700 mb-2">ชื่อเล่น</label> <input id="sf_nickname" class="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm bg-slate-50 outline-none"></div>
+                        <div><label class="block text-sm font-medium text-slate-700 mb-2">ชั้นเรียน *</label> <input id="sf_class" required placeholder="เช่น ม.1/1" class="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm bg-slate-50 outline-none"></div>
+                        <div><label class="block text-sm font-medium text-slate-700 mb-2">เลขที่ *</label> <input id="sf_number" type="number" class="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm bg-slate-50 outline-none"></div>
+                        <div><label class="block text-sm font-medium text-slate-700 mb-2">รหัสนักเรียน *</label> <input id="sf_id" required class="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm bg-slate-50 outline-none"></div>
+                        <div><label class="block text-sm font-medium text-slate-700 mb-2">เบอร์โทรศัพท์</label> <input id="sf_phone" type="tel" class="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm bg-slate-50 outline-none"></div>
+                        <div><label class="block text-sm font-medium text-slate-700 mb-2">Line ID</label> <input id="sf_line" class="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm bg-slate-50 outline-none"></div>
+                        <div><label class="block text-sm font-medium text-slate-700 mb-2">Facebook</label> <input id="sf_facebook" class="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm bg-slate-50 outline-none"></div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">รูปโปรไฟล์ (อัปโหลดอัตโนมัติ)</label> 
+                        <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-xl bg-slate-50 cursor-pointer" onclick="document.getElementById('sf_photo').click()">
+                            <div class="space-y-1 text-center">
+                                <i data-lucide="image" class="mx-auto h-12 w-12 text-slate-400"></i>
+                                <span class="text-teal-600 font-medium text-sm">คลิกอัปโหลดรูปภาพ</span>
+                                <input id="sf_photo" type="file" accept="image/*" class="sr-only">
+                                <p class="text-xs text-slate-500">PNG, JPG ไม่เกิน 5MB</p>
+                            </div>
+                        </div>
+                        <div id="photoPreviewContainer" class="mt-4 hidden text-center">
+                            <img id="photo_preview" class="w-32 h-32 object-cover rounded-full border-4 border-white shadow-md mx-auto">
+                            <p class="text-xs text-slate-400 mt-2" id="photo_status"></p>
+                        </div>
+                    </div>
+                    <div class="pt-4 border-t border-slate-100 flex justify-end gap-3">
+                        <button type="button" onclick="showPage('students')" class="px-5 py-2.5 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 bg-white cursor-pointer">ยกเลิก</button>
+                        <button type="button" onclick="saveStudent()" id="saveStudentBtn" class="bg-teal-600 hover:bg-teal-700 text-white px-8 py-2.5 rounded-lg text-sm font-medium shadow-sm border-none cursor-pointer">บันทึกข้อมูล</button>
+                    </div>
+                </form>
+            </section>
+
+            <section id="visit" class="tab-content space-y-6">
+                <div><h2 class="font-semibold text-2xl text-slate-900 mb-1" style="font-family:'Kanit';">บันทึกแบบเยี่ยมบ้าน</h2><p class="text-slate-500 text-sm">เลือกรหัสนักเรียนเพื่อบันทึกใหม่ หรือแก้ไขอัปเดตข้อมูลเดิม</p></div>
+                <form id="visitForm" class="bg-white rounded-2xl border border-slate-100 p-6 md:p-8 max-w-4xl space-y-10" style="box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
+                    
+                    <div class="space-y-4">
+                        <h3 class="font-semibold text-lg text-teal-800 border-b pb-2" style="font-family:'Kanit';">1. ข้อมูลทั่วไป & สถานการณ์เยี่ยม</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div><label class="block text-sm font-medium mb-2">นักเรียน *</label><select id="vf_student" onchange="checkExistingVisit(this.value)" required class="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm bg-slate-50 outline-none"></select></div>
+                            <div><label class="block text-sm font-medium mb-2">ผู้เยี่ยม *</label><input id="vf_visitor" required class="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm bg-slate-100 text-slate-500 cursor-not-allowed outline-none" readonly></div>
+                            <div><label class="block text-sm font-medium mb-2">สถานการณ์เยี่ยม</label><select id="vf_visit_status" class="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm bg-slate-50 outline-none"><option>เยี่ยมแล้ว</option><option>ยังไม่ได้เยี่ยม</option></select></div>
+                            <div><label class="block text-sm font-medium mb-2">วันที่เยี่ยม / ภาคเรียน</label><div class="flex gap-2"><input id="vf_date" type="date" required class="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm bg-slate-50 outline-none"><input id="vf_term" placeholder="ภาคเรียนที่" class="w-1/2 border border-slate-200 rounded-lg px-4 py-2.5 text-sm bg-slate-50 outline-none"></div></div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <h3 class="font-semibold text-lg text-teal-800 border-b pb-2" style="font-family:'Kanit';">2. สภาพที่อยู่อาศัยและการเดินทาง</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                            <div><label class="block text-sm font-medium mb-2">บ้านที่อาศัย</label><select id="vf_house_type" class="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm outline-none"><option>บ้านตนเอง</option><option>บ้านเช่า</option><option>หอพัก</option><option>อาศัยอยู่กับผู้อื่น/ญาติ</option><option>อื่นๆ</option></select></div>
+                            <div><label class="block text-sm font-medium mb-2">ระยะทาง (กม.) / เวลาเดินทาง (นาที)</label><div class="flex gap-2"><input id="vf_distance" type="number" step="0.01" placeholder="กม." class="w-1/2 border border-slate-200 rounded-lg px-4 py-2.5 text-sm bg-slate-100 outline-none" readonly><input id="vf_travel_time" type="number" placeholder="นาที" class="w-1/2 border border-slate-200 rounded-lg px-4 py-2.5 text-sm bg-slate-100 outline-none" readonly></div></div>
+                            <div><label class="block text-sm font-medium mb-2">การเดินทางไปโรงเรียน</label><select id="vf_commute" class="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm outline-none"><option>ผู้ปกครองมาส่ง</option><option>รถโรงเรียน</option><option>รถโดยสารประจำทาง</option><option>รถยนต์ส่วนตัว</option><option>รถจักรยานยนต์</option><option>รถจักรยาน</option><option>เดิน</option><option>อื่นๆ</option></select></div>
+                            <div><label class="block text-sm font-medium mb-2">สภาพตัวบ้าน</label><select id="vf_house_cond" class="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm outline-none"><option>ดี</option><option>พอใช้</option><option>เก่าทรุดโทรม</option></select></div>
+                            <div><label class="block text-sm font-medium mb-2">ความเป็นระเบียบ</label><select id="vf_house_order" class="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm outline-none"><option>สะอาดมีระเบียบ</option><option>ไม่ค่อยสะอาด</option><option>คับแคบ/ไม่มีความเป็นส่วนตัว</option><option>สกปรกไม่มีระเบียบ</option></select></div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">สาธารณูปโภคพื้นฐาน</label>
+                                <div class="flex gap-4 items-center h-10">
+                                    <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="vf_util_elec" class="rounded text-teal-600 w-4 h-4" checked> ไฟฟ้า</label>
+                                    <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="vf_util_water" class="rounded text-teal-600 w-4 h-4" checked> น้ำประปา</label>
+                                    <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="vf_util_toilet" class="rounded text-teal-600 w-4 h-4" checked> ห้องสุขา</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <h3 class="font-semibold text-lg text-teal-800 border-b pb-2" style="font-family:'Kanit';">3. ข้อมูลครอบครัว & รายได้</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                            <div><label class="block text-sm font-medium mb-2">จำนวนสมาชิก (คน)</label><input id="vf_fam_members" type="number" class="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm outline-none"></div>
+                            <div><label class="block text-sm font-medium mb-2">ความสัมพันธ์ในครอบครัว</label><select id="vf_fam_relation" class="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm outline-none"><option>รักใคร่กันดี</option><option>ขัดแย้งบางครั้ง</option><option>ขัดแย้งบ่อยครั้ง</option><option>ห่างเหิน</option><option>มีการทำร้ายร่างกาย</option></select></div>
+                            <div><label class="block text-sm font-medium mb-2">รายได้เฉลี่ยครอบครัว (บาท/เดือน)</label><input id="vf_fam_income" type="number" class="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm outline-none"></div>
+                            <div><label class="block text-sm font-medium mb-2">นักเรียนทำงานหารายได้ (บาท/วัน)</label><div class="flex gap-2"><input id="vf_job" placeholder="อาชีพ/งาน" class="w-1/2 border border-slate-200 rounded-lg px-4 py-2.5 text-sm outline-none"><input id="vf_job_income" type="number" placeholder="รายได้" class="w-1/2 border border-slate-200 rounded-lg px-4 py-2.5 text-sm outline-none"></div></div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <h3 class="font-semibold text-lg text-teal-800 border-b pb-2" style="font-family:'Kanit';">4. พฤติกรรมความเสี่ยง (เลือกเปิดหากพบความเสี่ยง)</h3>
+                        <div id="riskTogglesContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100"></div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <h3 class="font-semibold text-lg text-teal-800 border-b pb-2" style="font-family:'Kanit';">5. ความต้องการ & ข้อห่วงใย</h3>
+                        <div class="grid grid-cols-1 gap-4">
+                            <div><label class="block text-sm font-medium mb-2">ข้อห่วงใยของผู้ปกครอง</label><textarea id="vf_concern" rows="2" class="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm outline-none"></textarea></div>
+                            <div>
+                                <label class="block text-sm font-medium mb-3">สิ่งที่ต้องการให้โรงเรียนช่วยเหลือ</label>
+                                <div class="flex flex-wrap gap-4">
+                                    <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="vf_help_edu" class="rounded text-teal-600 w-4 h-4"> ด้านการเรียน</label>
+                                    <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="vf_help_behav" class="rounded text-teal-600 w-4 h-4"> ด้านพฤติกรรม</label>
+                                    <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="vf_help_econ" class="rounded text-teal-600 w-4 h-4"> ทุนการศึกษา/อาหาร</label>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">ความช่วยเหลืออื่นๆ</label>
+                                <input id="vf_otherHelp" placeholder="ระบุความช่วยเหลือเพิ่มเติม..." class="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <h3 class="font-semibold text-lg text-teal-800 border-b pb-2" style="font-family:'Kanit';">6. แนบรูปภาพ & พิกัด GPS</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center bg-slate-50 relative">
+                                <label class="block text-sm font-medium text-slate-700 mb-2">รูปถ่ายภายนอกบ้าน</label>
+                                <input type="file" id="vf_photo_ext" accept="image/*" class="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 cursor-pointer w-full">
+                                <img id="preview_ext" class="hidden w-full h-32 object-cover rounded-lg mt-3 border shadow-sm">
+                                <p id="status_ext" class="text-xs text-sky-600 mt-2"></p>
+                            </div>
+                            <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center bg-slate-50 relative">
+                                <label class="block text-sm font-medium text-slate-700 mb-2">รูปถ่ายภายในบ้าน / ครอบครัว</label>
+                                <input type="file" id="vf_photo_int" accept="image/*" class="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 cursor-pointer w-full">
+                                <img id="preview_int" class="hidden w-full h-32 object-cover rounded-lg mt-3 border shadow-sm">
+                                <p id="status_int" class="text-xs text-sky-600 mt-2"></p>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 flex flex-col md:flex-row items-start md:items-center justify-between bg-sky-50 p-4 rounded-xl border border-sky-100 gap-4">
+                            <div>
+                                <p class="font-medium text-sm text-sky-900">พิกัด GPS บ้านนักเรียน</p>
+                                <p id="gpsInfo" class="text-xs text-sky-600 mt-1 font-mono">ยังไม่มีข้อมูลพิกัด</p>
+                            </div>
+                            <div class="flex gap-2 w-full md:w-auto">
+                                <button type="button" onclick="getGPS()" class="bg-sky-600 hover:bg-sky-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition shadow-sm w-full md:w-auto flex items-center justify-center gap-2 border-none cursor-pointer"><i data-lucide="map-pin" class="w-4 h-4"></i> ดึงพิกัด</button>
+                                <button type="button" onclick="openMapPicker()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition shadow-sm w-full md:w-auto flex items-center justify-center gap-2 border-none cursor-pointer"><i data-lucide="map" class="w-4 h-4"></i> ปักหมุดเอง</button>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium mb-2">ลายเซ็นผู้ปกครอง</label>
+                            <canvas id="sigCanvas" class="border border-slate-300 rounded-xl w-full bg-white cursor-crosshair" height="120"></canvas>
+                            <div class="text-right mt-2"><button type="button" onclick="clearSignature()" class="text-xs px-3 py-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 font-medium border-none cursor-pointer">ล้างลายเซ็น</button></div>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 border-t border-slate-200">
+                        <button type="button" onclick="saveVisit()" id="saveVisitBtn" class="w-full bg-teal-600 hover:bg-teal-700 text-white px-6 py-4 rounded-xl text-lg font-semibold shadow-md flex justify-center items-center gap-2 border-none cursor-pointer">
+                            <i data-lucide="save" class="w-5 h-5"></i> <span id="saveVisitBtnText">บันทึกข้อมูลเยี่ยมบ้าน</span>
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <section id="screening" class="tab-content space-y-6">
+                <h2 class="font-semibold text-2xl mb-2" style="font-family:'Kanit';">คัดกรองความเสี่ยง</h2>
+                <div id="screeningList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            </section>
+            
+            <section id="map" class="tab-content space-y-4">
+                <h2 class="font-semibold text-2xl mb-2" style="font-family:'Kanit';">แผนที่พิกัดบ้านนักเรียน</h2>
+                <div class="flex flex-col lg:flex-row gap-4">
+                    <div class="flex-1 bg-white rounded-2xl border border-slate-200 p-2 relative" style="box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
+                        <div id="mapCanvas" class="w-full h-[500px] lg:h-[600px] rounded-xl z-0"></div>
+                    </div>
+                    <div class="w-full lg:w-80 bg-white rounded-2xl border border-slate-200 p-4 flex flex-col h-[500px] lg:h-[600px]" style="box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
+                        <h3 class="font-semibold text-lg mb-3 flex items-center justify-between text-slate-800" style="font-family:'Kanit';">
+                            <span>รายชื่อนักเรียน</span>
+                            <span class="text-xs font-normal text-slate-500 bg-slate-100 px-2 py-1 rounded-lg">พิกัดทั้งหมด: <span id="mapStudentTotal">0</span></span>
+                        </h3>
+                        <div class="flex gap-2 mb-3 pb-3 border-b border-slate-100">
+                            <button onclick="mapSelectAll(true)" class="flex-1 text-xs py-2 bg-teal-50 text-teal-700 rounded-lg font-medium border-none cursor-pointer hover:bg-teal-100 transition">เลือกทั้งหมด</button>
+                            <button onclick="mapSelectAll(false)" class="flex-1 text-xs py-2 bg-slate-50 text-slate-600 rounded-lg font-medium border-none cursor-pointer hover:bg-slate-100 transition">ยกเลิก</button>
+                        </div>
+                        <div id="mapStudentCheckboxes" class="flex-1 overflow-y-auto space-y-1 pr-2"></div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-4 text-center font-bold bg-white p-4 rounded-2xl border border-slate-200" style="box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
+                    <div><span class="block text-sm font-normal text-slate-500">แสดงบนแผนที่</span><span id="mapGpsCount" class="text-xl">0</span></div>
+                    <div><span class="block text-sm font-normal text-slate-500">เฝ้าระวัง</span><span id="mapWarningCount" class="text-xl text-amber-500">0</span></div>
+                    <div><span class="block text-sm font-normal text-slate-500">เร่งด่วน</span><span id="mapUrgentCount" class="text-xl text-rose-500">0</span></div>
+                </div>
+            </section>
+
+            <section id="reports" class="tab-content space-y-6">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h2 class="font-semibold text-2xl text-slate-900" style="font-family:'Kanit';">รายงานผลการเยี่ยมบ้าน</h2>
+                        <p class="text-sm text-slate-500">พิมพ์ PDF รูปแบบราชการ (Font Sarabun)</p>
+                    </div>
+                    <div class="flex items-center gap-3 w-full md:w-auto">
+                        <div class="flex flex-col">
+                            <label class="text-xs font-medium text-slate-500 mb-1">อัปโหลดหน้าปก PDF (A4)</label>
+                            <input type="file" id="pdfCoverUpload" accept="image/*" class="text-xs text-slate-500 file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:bg-indigo-50 file:text-indigo-700">
+                        </div>
+                        <button onclick="exportOfficialPDF()" class="bg-rose-600 hover:bg-rose-700 text-white px-5 py-3 rounded-xl text-sm font-medium flex items-center gap-2 shadow-sm border-none cursor-pointer"><i data-lucide="printer" class="w-4 h-4"></i> พิมพ์ PDF</button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200" style="box-shadow: 0 10px 30px rgba(0,0,0,0.03);"><h3 class="font-semibold mb-4" style="font-family:'Kanit';">สรุปความเสี่ยงรวม</h3><div id="classSummary" class="space-y-3"></div></div>
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200" style="box-shadow: 0 10px 30px rgba(0,0,0,0.03);"><h3 class="font-semibold mb-4" style="font-family:'Kanit';">รายชื่อแยกตามความเสี่ยง</h3><div id="individualReports" class="space-y-2 max-h-64 overflow-y-auto pr-2"></div></div>
+                </div>
+            </section>
+
+            <section id="visit_settings" class="tab-content space-y-6">
+                <h2 class="font-semibold text-2xl text-slate-900 mb-1" style="font-family:'Kanit';">การตั้งค่าระบบเยี่ยมบ้าน</h2>
+                <div class="bg-white rounded-2xl border border-slate-200 p-6 md:p-8 max-w-2xl space-y-6" style="box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
+                    <div><label class="block text-sm font-medium mb-2">ชื่อโรงเรียน</label><input id="set_school" class="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm bg-slate-50 outline-none"></div>
+                    <div><label class="block text-sm font-medium mb-2">ชื่อครูประจำชั้น</label><input id="set_teacher" class="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm bg-slate-50 outline-none"></div>
+                    <div><label class="block text-sm font-medium mb-2">พิกัด GPS โรงเรียน</label><input id="set_school_gps" placeholder="เช่น 13.736717, 100.523186" class="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm bg-slate-50 outline-none"></div>
+                    <div><label class="block text-sm font-medium mb-2">Google Apps Script Web App URL</label> <input id="set_api" type="url" class="w-full border border-indigo-200 bg-indigo-50 rounded-lg px-4 py-3 text-sm outline-none"></div>
+                    <button onclick="saveSettings()" class="bg-slate-800 text-white px-6 py-3 rounded-xl font-medium w-full mt-4 shadow-sm border-none cursor-pointer hover:bg-slate-900 transition">บันทึกการตั้งค่า</button>
+                </div>
+            </section>
+
+        </div>
+    </main>
+</div>
+
+<div class="modal-overlay" id="modalPortfolio">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 id="modalPortTitle"><i class="fas fa-palette c2-text"></i> เพิ่มผลงานใหม่</h3>
+            <button class="modal-close" data-close="modalPortfolio"><i class="fas fa-times"></i></button>
+        </div>
+        <form id="portfolioForm">
+            <input type="hidden" id="portId">
+            <div class="input-group"><label>ชื่อผลงาน / หมวดหมู่</label><input type="text" id="portTitle" required></div>
+            <div class="input-group"><label>คำอธิบายสั้นๆ</label><textarea id="portDesc" rows="2"></textarea></div>
+            <div class="input-group"><label>รายละเอียดเชิงลึก</label><textarea id="portLongDesc" rows="5"></textarea></div>
+            <div class="input-group">
+                <label>สี Theme</label>
+                <div class="color-picker-row">
+                    <div class="color-dot selected" data-color="c2" style="background:var(--c2-purple);"></div>
+                    <div class="color-dot" data-color="c4" style="background:var(--c4-blue);"></div>
+                    <div class="color-dot" data-color="c7" style="background:var(--c7-pink);"></div>
+                    <div class="color-dot" data-color="c1" style="background:var(--c1-teal);"></div>
+                </div>
+                <input type="hidden" id="portColor" value="c2">
+            </div>
+            <div class="input-group"><label>ป้ายกำกับ (badge)</label><input type="text" id="portBadge"></div>
+            <div class="input-group"><label>ชื่อปุ่มหลัก</label><input type="text" id="portBtn1" value="ดูรายละเอียด"></div>
+            <div class="input-group"><label>ลิงก์ปุ่มหลัก</label><input type="text" id="portBtn1Link"></div>
+            <div class="input-group"><label>ชื่อปุ่มรอง</label><input type="text" id="portBtn2" value="แกลลอรี"></div>
+            <div class="input-group"><label>ลิงก์ปุ่มรอง</label><input type="text" id="portBtn2Link"></div>
+            <div class="input-group">
+                <label>รูปภาพการ์ด</label>
+                <div class="upload-tabs">
+                    <button type="button" class="upload-tab-btn active" data-pane="port-url-pane">ใส่ลิงก์ URL</button>
+                    <button type="button" class="upload-tab-btn" data-pane="port-file-pane">อัปโหลดไฟล์</button>
+                </div>
+                <div id="port-url-pane" class="upload-tab-pane active"><input type="text" id="portImageUrl"></div>
+                <div id="port-file-pane" class="upload-tab-pane">
+                    <div class="file-drop-area bg-c2-light"><i class="fas fa-cloud-upload-alt c2-text"></i><p id="portFileName">คลิกหรือลากไฟล์</p><input type="file" id="portFile" accept="image/*"></div>
+                </div>
+                <div class="img-preview-box" id="portPreviewBox"><i class="fas fa-image placeholder-icon"></i></div>
+            </div>
+            <div class="input-group"><label>ลำดับแสดงผล</label><input type="number" id="portOrder" value="99"></div>
+            <button type="submit" class="btn-submit bg-c2" id="btnSavePortfolio"><i class="fas fa-save"></i> บันทึกผลงาน</button>
+        </form>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalFile">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3><i class="fas fa-upload c4-text"></i> อัปโหลดไฟล์ใหม่</h3>
+            <button class="modal-close" data-close="modalFile"><i class="fas fa-times"></i></button>
+        </div>
+        <form id="fileUploadForm">
+            <div class="input-group"><label>ชื่อไฟล์</label><input type="text" id="fileName" required></div>
+            <div class="input-group"><label>ประเภทไฟล์</label><select id="fileType"><option value="pdf">PDF</option><option value="document">เอกสาร</option><option value="image">รูปภาพ</option><option value="video">วิดีโอ</option><option value="other">อื่นๆ</option></select></div>
+            <div class="input-group"><label>ลิงก์ไฟล์</label><input type="text" id="fileUrl" required></div>
+            <div class="input-group"><label>คำอธิบายไฟล์</label><textarea id="fileDesc" rows="2"></textarea></div>
+            <div class="input-group"><label>หมวดหมู่</label><input type="text" id="fileCat"></div>
+            <div class="input-group"><label>ลำดับ</label><input type="number" id="fileOrder" value="1"></div>
+            <button type="submit" class="btn-submit bg-c4"><i class="fas fa-save"></i> บันทึกข้อมูลไฟล์</button>
+        </form>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalConfirmDelete">
+    <div class="modal-box" style="max-width:380px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-trash c7-text"></i> ยืนยันการลบ</h3>
+            <button class="modal-close" data-close="modalConfirmDelete"><i class="fas fa-times"></i></button>
+        </div>
+        <p id="confirmDeleteMsg" style="color:var(--text-muted);line-height:1.6;"></p>
+        <div class="confirm-btns">
+            <button class="btn-cancel" data-close="modalConfirmDelete">ยกเลิก</button>
+            <button class="btn-confirm-del" id="btnConfirmDelete"><i class="fas fa-trash"></i> ลบเลย</button>
+        </div>
+    </div>
+</div>
+
+<div id="deleteOverlay" class="fixed inset-0 bg-black/40 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl p-6 max-w-sm w-full space-y-4 text-center shadow-xl">
+        <h3 class="font-semibold text-lg text-slate-900" style="font-family:'Kanit';">ยืนยันการลบข้อมูล?</h3>
+        <p id="deleteMsgVisit" class="text-sm text-slate-500 pb-4"></p>
+        <div class="flex gap-3 justify-center">
+            <button onclick="cancelDelete()" class="px-5 py-2.5 border border-slate-200 bg-white rounded-xl text-sm cursor-pointer w-full hover:bg-slate-50 transition">ยกเลิก</button>
+            <button onclick="confirmDelete()" class="px-5 py-2.5 bg-rose-600 text-white border-none rounded-xl text-sm cursor-pointer w-full hover:bg-rose-700 transition">ลบข้อมูล</button>
+        </div>
+    </div>
+</div>
+
+<div id="mapPickerModal" class="fixed inset-0 bg-black/50 z-[60] hidden flex items-center justify-center p-4 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col">
+        <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <h3 class="font-semibold text-lg text-slate-800" style="font-family:'Kanit';">เลือกพิกัดบ้าน</h3>
+            <button type="button" onclick="closeMapPicker()" class="border-none bg-slate-200 hover:bg-slate-300 rounded-full p-1 cursor-pointer transition"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <div class="p-2 bg-slate-100"><div id="pickerMapCanvas" class="w-full h-[60vh] rounded-xl z-0 border border-slate-300"></div></div>
+        <div class="p-4 bg-white flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="text-sm text-slate-600 font-mono bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 w-full sm:w-auto text-center" id="pickerCoords">รอการเลือกพิกัด...</div>
+            <div class="flex gap-3 w-full sm:w-auto">
+                <button type="button" onclick="closeMapPicker()" class="w-full sm:w-auto px-5 py-2.5 border border-slate-300 bg-white hover:bg-slate-50 rounded-lg text-sm cursor-pointer transition">ยกเลิก</button>
+                <button type="button" onclick="confirmMapPicker()" class="w-full sm:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white border-none rounded-lg text-sm cursor-pointer transition flex items-center justify-center gap-2"><i data-lucide="check-circle" class="w-4 h-4"></i> ยืนยันพิกัด</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toastAdmin">
+    <i class="fas fa-check-circle"></i>
+    <span id="toastMsgAdmin">บันทึกสำเร็จ</span>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>
