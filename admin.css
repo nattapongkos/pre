@@ -290,3 +290,55 @@ body {
     font-size: 0.9rem !important;
     padding: 12px 20px !important;
 }
+
+/* =========================================
+   ทำให้หน้าต่างจัดการบล็อคประเมินเป็นแบบเต็มจอ
+   ========================================= */
+#modalEvalBlock { padding: 0; }
+#modalEvalBlock .modal-box {
+    width: 100vw; 
+    max-width: 100%; 
+    height: 100vh; 
+    max-height: 100vh; 
+    border-radius: 0;
+}
+#modalEvalBlock form { 
+    max-width: 1000px; /* กำหนดความกว้างของฟอร์มด้านใน (ปรับให้กว้าง/แคบได้ตามต้องการ) */
+    margin: 0 auto; 
+    padding-bottom: 50px;
+}
+#modalEvalBlock .modal-header { 
+    max-width: 1000px; 
+    margin: 0 auto 25px auto; 
+    padding-top: 20px;
+}
+
+/* ================================
+   Responsive image utilities (Admin)
+   ปรับขนาดรูปให้เป็นมาตรฐานและตอบสนองหน้าจอ
+   ================================ */
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+.img-standard {
+    width: 100%;
+    max-height: 280px;
+    height: auto;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+}
+
+/* จำกัดความสูงของรูปตัวอย่างในหน้าแอดมิน เช่น รายการไฟล์/อัลบั้ม */
+.file-thumb, .modal-file-thumb {
+    max-height: 220px;
+    overflow: hidden;
+}
+.file-thumb img, .modal-file-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}

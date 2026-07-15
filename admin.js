@@ -38,7 +38,7 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbybFQuMn_Yn_mUz
 const GAS_UPLOAD_URL = "https://script.google.com/macros/s/AKfycby2cJQpCNoeUpJSq8Mb_Hiwz2Yb3ak43wJiYGaqtAUvwYivkBqmaS1OvbvZgr5u0t4U/exec"; 
 
 const tabTitles = { 
-    dashboard: 'ภาพรวมระบบ', banner: 'จัดการแบนเนอร์', portfolio: 'จัดการผลงาน', files: 'จัดการไฟล์', profile: 'จัดการข้อมูลโปรไฟล์',
+    dashboard: 'ภาพรวมระบบ', banner: 'จัดการแบนเนอร์', portfolio: 'จัดการผลงาน', work: 'จัดการด้านการปฏิบัติงาน', files: 'จัดการไฟล์', profile: 'จัดการข้อมูลโปรไฟล์',
     visit_dashboard: 'สถิติการเยี่ยมบ้าน', students: 'ข้อมูลนักเรียน', visit: 'บันทึกแบบเยี่ยมบ้าน', screening: 'คัดกรองความเสี่ยง', 
     map: 'แผนที่พิกัดบ้านนักเรียน', reports: 'รายงานผลการเยี่ยมบ้าน', visit_settings: 'ตั้งค่าระบบเยี่ยมบ้าน', studentForm: 'จัดการข้อมูลนักเรียน'
 };
@@ -93,6 +93,23 @@ document.addEventListener('DOMContentLoaded', () => {
         if (targetNav) {
             visitSubMenu.classList.remove('collapsed');
             visitChevron.classList.add('rotate');
+        }
+    };
+
+    // ฟังก์ชัน เปิด-ปิด ส่วนหัวรายงานใน Modal
+    window.toggleEvalHeader = function(forceClose = null) {
+        const content = document.getElementById('evalHeaderContent');
+        const chevron = document.getElementById('evalHeaderChevron');
+        if (!content) return;
+
+        const isHidden = forceClose !== null ? forceClose : !content.classList.contains('hidden');
+        
+        if (isHidden) {
+            content.classList.add('hidden');
+            chevron.style.transform = 'rotate(0deg)';
+        } else {
+            content.classList.remove('hidden');
+            chevron.style.transform = 'rotate(180deg)';
         }
     };
 
@@ -152,19 +169,34 @@ document.addEventListener('DOMContentLoaded', () => {
     setupUploadTabs('#bannerForm');
     setupUploadTabs('#modalPortfolio');
 
-    // --- ฟังก์ชันดึงข้อมูล (ประกาศให้เรียกใช้ได้ภายในบล็อกนี้) ---
     function loadDashboardStats() {
-        db.collection('portfolio').onSnapshot(snap => { if(document.getElementById('stat-portfolio')) document.getElementById('stat-portfolio').textContent = snap.size; });
-        db.collection('files').onSnapshot(snap => {
+        db.collection('portfolio').onSnapshot(snap => { 
+            if(document.getElementById('stat-portfolio')) document.getElementById('stat-portfolio').textContent = snap.size; 
+        });
+        
+        // ✅ เปลี่ยนมาดึงข้อมูลจากคอลเลกชัน albums เพื่อคำนวณยอดไฟล์ภายในโฟลเดอร์ทั้งหมด
+        db.collection('albums').onSnapshot(snap => {
             if(document.getElementById('stat-files')) document.getElementById('stat-files').textContent = snap.size;
-            let docCount = 0, mediaCount = 0;
+            
+            let totalPdfs = 0;
+            let totalImages = 0;
+            
             snap.forEach(doc => {
-                const type = doc.data().type;
-                if (type === 'pdf' || type === 'document') docCount++;
-                else if (type === 'image' || type === 'video') mediaCount++;
+                const data = doc.data();
+                const files = data.files || [];
+                
+                // วนลูปนับประเภทไฟล์ที่บันทึกอยู่ภายในโฟลเดอร์นั้นๆ
+                files.forEach(f => {
+                    if (f.type === 'pdf') {
+                        totalPdfs++;
+                    } else if (f.type === 'image') {
+                        totalImages++;
+                    }
+                });
             });
-            if(document.getElementById('stat-docs')) document.getElementById('stat-docs').textContent = docCount;
-            if(document.getElementById('stat-media')) document.getElementById('stat-media').textContent = mediaCount;
+            
+            if(document.getElementById('stat-docs')) document.getElementById('stat-docs').textContent = totalPdfs;
+            if(document.getElementById('stat-media')) document.getElementById('stat-media').textContent = totalImages;
         });
     }
 
@@ -234,36 +266,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }).join('');
     }
 
-    let fileSearchQuery = '', fileTypeQuery = '', nextFileOrder = 1;
-    function loadFileList() {
-        const grid = document.getElementById('fileGrid'); if(!grid) return;
-        grid.innerHTML = '<div class="loading-row" style="grid-column:1/-1"><div class="spinner"></div> กำลังโหลดข้อมูล...</div>';
-        db.collection('files').get().then(snap => {
-            if (snap.empty) { grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><i class="fas fa-folder-open"></i><p>ยังไม่มีไฟล์ กด "อัปโหลดไฟล์ใหม่" เพื่อเริ่มต้น</p></div>'; nextFileOrder = 1; return; }
-            const items = []; snap.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
-            nextFileOrder = items.reduce((max, item) => Math.max(max, item.order || 0), 0) + 1;
-            items.sort((a, b) => (a.order || 99) - (b.order || 99)); renderFileGrid(items);
-        });
-    }
+   
 
     const fileIconMap = { pdf: { icon: 'fa-file-pdf', cls: 'icon-pdf' }, document: { icon: 'fa-file-word', cls: 'icon-doc' }, image: { icon: 'fa-file-image', cls: 'icon-img' }, video: { icon: 'fa-file-video', cls: 'icon-vid' }, zip: { icon: 'fa-file-archive', cls: 'icon-zip' }, other: { icon: 'fa-file', cls: 'icon-other' } };
-    function renderFileGrid(items) {
-        const grid = document.getElementById('fileGrid'); const q = fileSearchQuery.toLowerCase(), t = fileTypeQuery;
-        const filtered = items.filter(i => (!q || (i.name || '').toLowerCase().includes(q)) && (!t || i.type === t));
-        if (filtered.length === 0) { grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><i class="fas fa-search"></i><p>ไม่พบไฟล์ที่ค้นหา</p></div>'; return; }
-        
-        grid.innerHTML = filtered.map(item => {
-            const fi = fileIconMap[item.type] || fileIconMap.other;
-            return `
-            <div class="file-card" onclick="window.open('${item.url || '#'}','_blank')" data-id="${item.id}">
-                <div style="position:absolute;top:12px;left:15px;background:#f1f5f9;padding:4px 10px;border-radius:10px;font-size:0.75rem;font-weight:700;">#${item.order || 99}</div>
-                <div class="file-card-actions"><button class="btn-icon btn-edit" onclick="event.stopPropagation();editFile('${item.id}')"><i class="fas fa-pen"></i></button><button class="btn-icon btn-del" onclick="event.stopPropagation();deleteItemAdmin('files','${item.id}','${(item.name || '').replace(/'/g, "\\'")}')"><i class="fas fa-trash"></i></button></div>
-                <div class="file-card-icon" style="margin-top:10px;"><i class="fas ${fi.icon} ${fi.cls}"></i></div>
-                <div class="file-card-name">${item.name || '(ไม่มีชื่อ)'}</div>
-                <div class="file-card-size">${item.cat || item.type || 'ไฟล์'}</div>
-            </div>`;
-        }).join('');
-    }
+    
 
     // --- สร้างฟังก์ชันโกลบอล (Global) เพื่อจัดการเมนู ---
     // โดยนำไปฝังไว้ในหน้าต่างเพื่อให้ฝั่ง HTML หาเจอ แต่ยังคงมองเห็นฟังก์ชันข้างบนได้
@@ -286,7 +292,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // โหลดข้อมูลตามหน้าแท็บที่กด
         if (id === 'portfolio') loadPortfolioList();
-        if (id === 'files') loadFileList();
+        if (id === 'files') { 
+            loadAdminAlbumsList(); 
+        }
         if (id === 'banner') loadBannerData();
         if (id === 'dashboard') loadDashboardStats();
         if (id === 'profile') loadProfileData();
@@ -396,42 +404,50 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    // FILES
-    document.getElementById('fileSearch')?.addEventListener('input', (e) => { fileSearchQuery = e.target.value; loadFileList(); });
-    document.getElementById('fileTypeFilter')?.addEventListener('change', (e) => { fileTypeQuery = e.target.value; loadFileList(); });
-    document.getElementById('btnAddFile')?.addEventListener('click', () => { document.getElementById('fileUploadForm').reset(); document.getElementById('fileUploadForm').removeAttribute('data-edit-id'); document.getElementById('fileOrder').value = nextFileOrder; openModal('modalFile'); });
 
-    document.getElementById('fileUploadForm')?.addEventListener('submit', async (e) => {
-        e.preventDefault(); const btn = e.target.querySelector('[type="submit"]'); btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; btn.disabled = true;
-        try {
-            const editId = e.target.getAttribute('data-edit-id');
-            const data = { name: document.getElementById('fileName').value.trim(), type: document.getElementById('fileType').value, url: document.getElementById('fileUrl').value.trim(), desc: document.getElementById('fileDesc').value.trim(), cat: document.getElementById('fileCat').value.trim(), order: parseInt(document.getElementById('fileOrder').value) || 99, updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
-            if (editId) { await db.collection('files').doc(editId).update(data); showToast('แก้ไขไฟล์สำเร็จ!'); } else { data.createdAt = firebase.firestore.FieldValue.serverTimestamp(); await db.collection('files').add(data); showToast('เพิ่มไฟล์สำเร็จ!'); }
-            closeModal('modalFile'); loadFileList(); loadDashboardStats();
-        } catch (err) { showToast('ผิดพลาด: ' + err.message, true); } finally { btn.innerHTML = '<i class="fas fa-save"></i> บันทึกข้อมูลไฟล์'; btn.disabled = false; }
-    });
 
-    window.editFile = function (id) {
-        db.collection('files').doc(id).get().then(doc => {
-            if (!doc.exists) return; const d = doc.data(); document.getElementById('fileUploadForm').setAttribute('data-edit-id', id);
-            ['fileName', 'fileType', 'fileUrl', 'fileDesc', 'fileCat', 'fileOrder'].forEach(f => { if(document.getElementById(f)) document.getElementById(f).value = d[f.replace('file','').toLowerCase()] || d[f.replace('fileName','name').replace('fileUrl','url').replace('fileDesc','desc').replace('fileCat','cat').replace('fileOrder','order')] || ''; });
-            openModal('modalFile');
-        });
-    };
+   
 
     // DELETE (Admin System)
     let pendingDeleteAdmin = { collection: null, id: null };
     window.deleteItemAdmin = function (col, id, label) { pendingDeleteAdmin = { collection: col, id }; document.getElementById('confirmDeleteMsg').textContent = `ยืนยันลบ "${label}" ?`; openModal('modalConfirmDelete'); };
     document.getElementById('btnConfirmDelete')?.addEventListener('click', async () => {
-        if (!pendingDeleteAdmin.collection) return;
-        const btn = document.getElementById('btnConfirmDelete'); btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; btn.disabled = true;
-        try { await db.collection(pendingDeleteAdmin.collection).doc(pendingDeleteAdmin.id).delete(); showToast('ลบสำเร็จ'); closeModal('modalConfirmDelete'); if (pendingDeleteAdmin.collection === 'portfolio') loadPortfolioList(); else loadFileList(); loadDashboardStats(); } 
-        catch (err) { showToast('ลบล้มเหลว', true); } finally { btn.innerHTML = '<i class="fas fa-trash"></i> ลบเลย'; btn.disabled = false; pendingDeleteAdmin = { collection: null, id: null }; }
-    });
+    if (!pendingDeleteAdmin.collection) return;
+    const btn = document.getElementById('btnConfirmDelete'); 
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; 
+    btn.disabled = true;
+    try { 
+        await db.collection(pendingDeleteAdmin.collection).doc(pendingDeleteAdmin.id).delete(); 
+        showToast('ลบสำเร็จ'); 
+        closeModal('modalConfirmDelete'); 
+        
+        // --- เพิ่มเงื่อนไขให้รีเฟรชระบบประเมินครูผู้ช่วย ---
+        if (pendingDeleteAdmin.collection === 'portfolio') {
+            loadPortfolioList(); 
+        } else if (pendingDeleteAdmin.collection === 'evaluations') {
+            if (typeof loadEvalBlocks === 'function') loadEvalBlocks(); // รีเฟรชตารางประเมินทันที
+        } else {
+            loadFileList(); 
+        }
+        
+        loadDashboardStats(); 
+    } 
+    catch (err) { showToast('ลบล้มเหลว', true); } 
+    finally { 
+        btn.innerHTML = '<i class="fas fa-trash"></i> ลบเลย'; 
+        btn.disabled = false; 
+        pendingDeleteAdmin = { collection: null, id: null }; 
+    }
+});
 
     // เริ่มต้นระบบ (หน้าแรกของแอดมิน)
     loadDashboardStats();
 
+    // --- Album import handlers (จาก UI ที่แทรกในหน้า files) ---
+    function extractDriveIdFromUrl(url){ const m = url.match(/\/d\/([\w-]{25,})/) || url.match(/id=([\w-]{25,})/) || url.match(/([\w-]{25,})/); return m? (m[1]||m[2]||m[0]) : null; }
+    function detectTypeFromUrl(url){ const u = url.split('?')[0].split('#')[0]; if(/\.(jpe?g|png|gif)$/i.test(u)) return 'image'; if(/\.pdf$/i.test(u)) return 'pdf'; return 'other'; }
+
+   
 }); // สิ้นสุดบล็อกของแอดมิน
 
 
@@ -448,13 +464,35 @@ function applySettings() {
     if(document.getElementById('vf_visitor')) document.getElementById('vf_visitor').value = appSettings.teacherName;
 }
 
-function saveSettings() {
+async function loadEvalVisibilitySetting() {
+    const toggle = document.getElementById('evalSectionToggle');
+    if (!toggle) return;
+    try {
+        const doc = await db.collection('settings').doc('eval_visibility').get();
+        const enabled = doc.exists ? (doc.data().enabled !== false) : true;
+        toggle.checked = enabled;
+    } catch (err) {
+        console.warn('ไม่สามารถโหลดสถานะการแสดงผลประเมินครูผู้ช่วยได้', err);
+        toggle.checked = true;
+    }
+}
+
+async function saveSettings() {
     appSettings.schoolName = document.getElementById('set_school').value.trim();
     appSettings.teacherName = document.getElementById('set_teacher').value.trim();
     appSettings.apiURL = document.getElementById('set_api').value.trim();
     appSettings.schoolGPS = document.getElementById('set_school_gps').value.trim();
     localStorage.setItem('appSettings', JSON.stringify(appSettings));
-    applySettings(); toast('✅ บันทึกตั้งค่าระบบเยี่ยมบ้านแล้ว'); 
+
+    const evalEnabled = document.getElementById('evalSectionToggle')?.checked ?? true;
+    try {
+        await db.collection('settings').doc('eval_visibility').set({ enabled: evalEnabled }, { merge: true });
+    } catch (err) {
+        console.warn('ไม่สามารถบันทึกสถานะการแสดงผลประเมินครูผู้ช่วยได้', err);
+    }
+
+    applySettings();
+    toast('✅ บันทึกตั้งค่าระบบเยี่ยมบ้านแล้ว');
 }
 
 function getDriveThumbnail(url) { if (!url) return ''; const match = url.match(/id=([a-zA-Z0-9_-]+)/); return match ? `https://drive.google.com/thumbnail?id=${match[1]}&sz=w800` : url; }
@@ -499,6 +537,49 @@ window.dataSdk = {
 const dataHandler = { onDataChanged() { updateDashboard(); updateStudentList(); updateVisitStudentDropdown(); updateScreening(); updateReports(); renderMapCheckboxes(); updateMap(); } };
 
 document.addEventListener('DOMContentLoaded', async () => { 
+   await loadEvalVisibilitySetting();
+   // เริ่มต้นระบบ TinyMCE สำหรับช่องประเมิน (ฉบับแสดงแถบเหมือน Word + แก้ช่องว่าง Enter)
+tinymce.init({
+    selector: '#evalContent',
+    height: 600,
+    
+    // เปิดแถบเมนูด้านบน (File, Edit, Format ฯลฯ)
+    menubar: 'file edit view insert format tools table help',
+    
+    plugins: 'advlist autolink lists link image charmap preview searchreplace visualblocks code fullscreen insertdatetime table wordcount',
+    
+    // เพิ่มปุ่มในแถบเครื่องมือให้ครบเหมือน Word
+    toolbar: 'undo redo | styles | fontfamily fontsize | bold italic underline strikethrough | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | lineheight | table charmap | removeformat fullscreen',
+    
+    font_family_formats: 'Sarabun=Sarabun,sans-serif; Prompt=Prompt,sans-serif; Kanit=Kanit,sans-serif;',
+    
+    // คงเมนู Dropdown สำหรับปรับช่องไฟและระยะบรรทัดของคุณครูไว้
+    style_formats: [
+        {
+            title: 'ระยะช่องไฟ (Letter Spacing)',
+            items: [
+                { title: 'ปกติ (Default)', inline: 'span', styles: { 'letter-spacing': 'normal' } },
+                { title: 'บีบให้ชิดขึ้น (-0.5pt)', inline: 'span', styles: { 'letter-spacing': '-0.5pt' } },
+                { title: 'บีบมาก (-1pt)', inline: 'span', styles: { 'letter-spacing': '-1pt' } },
+                { title: 'ขยายให้ห่าง (0.5pt)', inline: 'span', styles: { 'letter-spacing': '0.5pt' } },
+                { title: 'ขยายมาก (1pt)', inline: 'span', styles: { 'letter-spacing': '1pt' } }
+            ]
+        },
+        {
+            title: 'ระยะห่างบรรทัด (Line Spacing)',
+            items: [
+                { title: 'แคบ (1.2)', block: 'p', styles: { 'line-height': '1.2' } },
+                { title: 'ปกติ (1.5)', block: 'p', styles: { 'line-height': '1.5' } },
+                { title: 'กว้าง (1.8)', block: 'p', styles: { 'line-height': '1.8' } }
+            ]
+        }
+    ],
+    
+    // เพิ่ม p { margin: 0; padding: 0; } ต่อท้ายเพื่อแก้ปัญหาช่องว่างห่างเวลากด Enter
+    content_style: "@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap'); body { font-family: 'Sarabun', sans-serif; font-size: 14pt; line-height: 1.5; text-align: left; } p { margin: 0; padding: 0; }"
+});
+
+    // โค้ดส่วนระบบเยี่ยมบ้านของคุณครู (ไม่ต้องลบออก)
     applySettings(); if(typeof lucide !== 'undefined') lucide.createIcons(); buildRiskToggles(); initSignature(); initMap(); await window.dataSdk.init(dataHandler); 
 });
 
@@ -846,3 +927,786 @@ window.confirmMapPicker = async function() {
         if(sLat && sLng) { toast('📍 กำลังคำนวณเส้นทางจริง...', '#0ea5e9'); const route = await getRouteOSRM(sLat, sLng, currentGPS.lat, currentGPS.lng); if(route) { document.getElementById('vf_distance').value = route.distanceKm; document.getElementById('vf_travel_time').value = route.durationMin; } else { const dist = calculateDistance(sLat, sLng, currentGPS.lat, currentGPS.lng); document.getElementById('vf_distance').value = dist.toFixed(2); document.getElementById('vf_travel_time').value = Math.round((dist / 40) * 60); } }
     } window.closeMapPicker(); toast('📍 ปักหมุดและคำนวณระยะทางสำเร็จ', '#4f46e5');
 };
+
+
+// ===================================================
+// ส่วนต่อขยาย: ระบบประเมินครูผู้ช่วย (Assistant Teacher Evaluation)
+// ===================================================
+let currentEvalRound = 1;
+let evalDataList = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. จัดการเมนู Dropdown แถบประเมินครูผู้ช่วย
+    const evalToggle = document.getElementById('evalToggle');
+    const evalSubMenu = document.getElementById('evalSubMenu');
+    const evalChevron = document.getElementById('evalChevron');
+
+    if (evalToggle && evalSubMenu) {
+        evalToggle.addEventListener('click', () => {
+            const isCollapsed = evalSubMenu.classList.toggle('collapsed');
+            if (isCollapsed) evalChevron.classList.remove('rotate');
+            else evalChevron.classList.add('rotate');
+        });
+    }
+
+    // 2. ดักการเปลี่ยนหน้าต่าง (Override window.showPage แบบแนบเนียน)
+    const originalShowPageFunc = window.showPage;
+    window.showPage = function(id) {
+        
+        // --- จุดนี้คือตัวแก้ Error: ถ้าคลิกแล้วไม่มี ID ส่งมา (เช่นคลิกหัวข้อเมนู) ให้หยุดทำงานทันที ---
+        if (!id || typeof id !== 'string') return; 
+
+        let targetId = id;
+        
+        // ถ้าเป็นการกดเมนูประเมินครูผู้ช่วย (eval_1 ถึง eval_4)
+        if (id.startsWith('eval_')) {
+            currentEvalRound = parseInt(id.split('_')[1]);
+            document.getElementById('evalMainTitle').textContent = `ประเมินครูผู้ช่วย ครั้งที่ ${currentEvalRound}`;
+            targetId = 'eval_main';
+            if (typeof loadEvalBlocks === 'function') loadEvalBlocks();
+            
+            // กางเมนูย่อยให้ค้างไว้
+            const evalSubMenu = document.getElementById('evalSubMenu');
+            const evalChevron = document.getElementById('evalChevron');
+            if(evalSubMenu) {
+                evalSubMenu.classList.remove('collapsed');
+                if(evalChevron) evalChevron.classList.add('rotate');
+            }
+        }
+
+        // เรียกฟังก์ชันเปลี่ยนหน้าหลัก
+        originalShowPageFunc(targetId);
+        
+        // ตรวจสอบและ Highlight เมนูให้ถูกต้อง
+        document.querySelectorAll('.nav-links li').forEach(n => n.classList.remove('active'));
+        const navItem = document.querySelector(`.nav-links li[data-tab="${id}"]`);
+        if(navItem) navItem.classList.add('active');
+    };
+    
+    // 3. ระบบอัปโหลดรูปภาพเฉพาะบล็อคประเมิน
+    document.getElementById('evalImageUpload')?.addEventListener('change', async (e) => {
+        if(e.target.files[0]) {
+            const file = e.target.files[0];
+            const status = document.getElementById('evalImageStatus');
+            const previewContainer = document.getElementById('evalImagePreviewContainer');
+            const previewImg = document.getElementById('evalImagePreview');
+            const urlInput = document.getElementById('evalImageUrl');
+            
+            status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังอัปโหลดรูปภาพ...';
+            document.getElementById('btnSaveEvalBlock').disabled = true;
+            
+            const reader = new FileReader();
+            reader.onload = async (ev) => {
+                try {
+                    const base64Data = ev.target.result.split(',')[1]; 
+                    const res = await fetch(GAS_UPLOAD_URL, { 
+                        method: 'POST', body: JSON.stringify({ filename: "eval_" + Date.now() + ".jpg", mimeType: file.type, base64: base64Data }) 
+                    });
+                    const json = await res.json();
+                    if (json.status === 'success') { 
+                        status.innerHTML = '<i class="fas fa-check-circle text-teal-600"></i> อัปโหลดสำเร็จ'; 
+                        urlInput.value = json.url;
+                        previewImg.src = json.url; // ใน GAS อาจจะดึงภาพมาแสดงไม่ได้ทันที ให้ใช้ Base64 ของตัวเครื่องแสดงแทน
+                        previewImg.src = ev.target.result;
+                        previewContainer.classList.remove('hidden');
+                    } else throw new Error();
+                } catch(err) { 
+                    status.innerHTML = '<i class="fas fa-times-circle text-rose-600"></i> ล้มเหลว'; 
+                } finally {
+                    document.getElementById('btnSaveEvalBlock').disabled = false;
+                }
+            }; 
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // 4. บันทึกข้อมูลแบบฟอร์มบล็อค
+    document.getElementById('evalBlockForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btnSaveEvalBlock');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
+        btn.disabled = true;
+
+        try {
+            const blockId = document.getElementById('evalBlockId').value;
+            const data = {
+                round: currentEvalRound,
+                title: document.getElementById('evalTitle').value.trim(),
+                content: tinymce.get('evalContent') ? tinymce.get('evalContent').getContent() : document.getElementById('evalContent').value.trim(),
+                startDate: document.getElementById('evalStartDate').value.trim(), // เพิ่ม
+                endDate: document.getElementById('evalEndDate').value.trim(),     // เพิ่ม
+                schoolName: document.getElementById('evalSchoolName').value.trim(), // เพิ่ม
+                imageUrl: document.getElementById('evalImageUrl').value,
+                order: parseInt(document.getElementById('evalOrder').value) || 1,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            if (blockId) {
+                await db.collection('evaluations').doc(blockId).update(data);
+                toast('✅ อัปเดตบล็อคข้อมูลสำเร็จ', '#10b981');
+            } else {
+                data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                await db.collection('evaluations').add(data);
+                toast('✅ เพิ่มบล็อคข้อมูลใหม่สำเร็จ', '#10b981');
+            }
+            
+            document.getElementById('modalEvalBlock').classList.remove('open');
+            loadEvalBlocks();
+        } catch (err) {
+            toast('❌ ผิดพลาด: ' + err.message, '#ef4444');
+        } finally {
+            btn.innerHTML = '<i class="fas fa-save"></i> บันทึกข้อมูลบล็อคนี้';
+            btn.disabled = false;
+        }
+    });
+
+});
+
+// ฟังก์ชันดึงและแสดงข้อมูล (ฉบับแก้ไขหลีกเลี่ยง Index Error)
+function loadEvalBlocks() {
+    const container = document.getElementById('evalBlocksContainer');
+    if(!container) return;
+    
+    container.innerHTML = '<div class="text-center p-8 text-slate-400"><i class="fas fa-spinner fa-spin text-2xl mb-2"></i><br>กำลังโหลดข้อมูล...</div>';
+    
+    // เอา .orderBy() ออก เพื่อไม่ให้ติด Error จาก Firebase
+    db.collection('evaluations').where('round', '==', currentEvalRound).get().then(snap => {
+        evalDataList = [];
+        if (snap.empty) {
+            container.innerHTML = '<div class="bg-white rounded-2xl p-8 text-center border border-slate-200"><i class="fas fa-box-open text-4xl text-slate-300 mb-3"></i><p class="text-slate-500">ยังไม่มีบล็อคข้อมูลในครั้งนี้ กด "เพิ่มบล็อคข้อมูล" เพื่อเริ่มต้น</p></div>';
+            return;
+        }
+        
+        snap.forEach(doc => {
+            const d = doc.data();
+            evalDataList.push({id: doc.id, ...d});
+        });
+
+        // ใช้ JavaScript เรียงลำดับจากน้อยไปมากแทน
+        evalDataList.sort((a, b) => (a.order || 99) - (b.order || 99));
+
+        let html = '';
+        evalDataList.forEach(d => {
+            html += `
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 flex flex-col md:flex-row gap-6 relative" style="box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+                <div class="absolute top-4 right-4 flex gap-2">
+                    <button onclick="editEvalBlock('${d.id}')" class="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 hover:bg-sky-500 hover:text-white flex items-center justify-center transition border-none cursor-pointer"><i class="fas fa-pen text-xs"></i></button>
+                    <button onclick="deleteItemAdmin('evaluations','${d.id}','${d.title}')" class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white flex items-center justify-center transition border-none cursor-pointer"><i class="fas fa-trash text-xs"></i></button>
+                </div>
+                ${d.imageUrl ? `<div class="w-full md:w-1/4 flex-shrink-0"><img src="${getDriveThumbnail(d.imageUrl)}" class="w-full h-auto rounded-xl border border-slate-100 object-cover"></div>` : ''}
+                <div class="flex-1">
+                    <div class="text-xs font-bold text-indigo-500 mb-1 tracking-wider">ลำดับที่ ${d.order || '-'}</div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-2" style="font-family:'Kanit'">${d.title}</h3>
+                    <div class="text-slate-600 text-sm leading-relaxed" style="font-family:'Sarabun', sans-serif;">${d.content}</div>
+                </div>
+            </div>`;
+        });
+        container.innerHTML = html;
+    }).catch(err => {
+        console.error("Eval Load Error:", err);
+        container.innerHTML = '<div class="text-center p-8 text-rose-500">เกิดข้อผิดพลาดในการโหลดข้อมูล</div>';
+    });
+}
+
+window.openEvalModal = function() {
+    if(tinymce.get('evalContent')) tinymce.get('evalContent').setContent('');
+    document.getElementById('evalBlockForm').reset();
+    document.getElementById('evalBlockId').value = '';
+    document.getElementById('evalImageUrl').value = '';
+    document.getElementById('evalImagePreviewContainer').classList.add('hidden');
+    document.getElementById('evalImageStatus').textContent = '';
+    
+    // --- New Logic: ดึงข้อมูลหัวกระดาษจากบล็อคที่มีอยู่แล้วในรอบนี้ ---
+    const existingHeader = evalDataList.find(d => d.startDate || d.schoolName);
+    
+    if (existingHeader) {
+        document.getElementById('evalStartDate').value = existingHeader.startDate || '';
+        document.getElementById('evalEndDate').value = existingHeader.endDate || '';
+        document.getElementById('evalSchoolName').value = existingHeader.schoolName || '';
+        // ถ้ามีข้อมูลอยู่แล้ว ให้ "ย่อเก็บ" ทันที จะได้ไม่รกสายตา
+        toggleEvalHeader(true); 
+    } else {
+        // ถ้าเป็นบล็อคแรกของรอบ ให้ "กางออก" เพื่อให้กรอกข้อมูล
+        toggleEvalHeader(false);
+    }
+    
+    document.getElementById('modalEvalTitle').innerHTML = `<i class="fas fa-plus-circle c1-text"></i> เพิ่มบล็อคข้อมูล (ครั้งที่ ${currentEvalRound})`;
+    const nextOrder = evalDataList.length > 0 ? Math.max(...evalDataList.map(o => o.order || 0)) + 1 : 1;
+    document.getElementById('evalOrder').value = nextOrder;
+    
+    document.getElementById('modalEvalBlock').classList.add('open');
+};
+
+// ดึงข้อมูลมาแก้ไข
+window.editEvalBlock = function(id) {
+    const item = evalDataList.find(d => d.id === id);
+    if(!item) return;
+    
+    document.getElementById('evalBlockId').value = item.id;
+    document.getElementById('evalTitle').value = item.title || '';
+    if(tinymce.get('evalContent')) tinymce.get('evalContent').setContent(item.content || '');
+    else document.getElementById('evalContent').value = item.content || '';
+    document.getElementById('evalOrder').value = item.order || 1;
+    document.getElementById('evalImageUrl').value = item.imageUrl || '';
+    document.getElementById('evalImageStatus').textContent = '';
+    document.getElementById('evalStartDate').value = item.startDate || ''; 
+    document.getElementById('evalEndDate').value = item.endDate || '';     
+    document.getElementById('evalSchoolName').value = item.schoolName || '';
+    // ถ้าบล็อคนี้มีข้อมูลวันที่/โรงเรียน ให้กางออกเพื่อให้เห็นและแก้ไขได้
+    if (item.startDate || item.schoolName) toggleEvalHeader(false);
+    else toggleEvalHeader(true); // ถ้าไม่มีก็ย่อไว้เหมือนเดิม
+
+    if(item.imageUrl) {
+        document.getElementById('evalImagePreview').src = getDriveThumbnail(item.imageUrl);
+        document.getElementById('evalImagePreviewContainer').classList.remove('hidden');
+    } else {
+        document.getElementById('evalImagePreviewContainer').classList.add('hidden');
+    }
+    
+    document.getElementById('modalEvalTitle').innerHTML = '<i class="fas fa-pen c4-text"></i> แก้ไขบล็อคข้อมูล';
+    document.getElementById('modalEvalBlock').classList.add('open');
+};
+
+
+// ส่งออก PDF รูปแบบราชการไทย (ใช้วิธี Native Print เพื่อแก้ปัญหาสระลอยและตัดหน้า)
+window.exportEvalPDF = function() {
+    if(evalDataList.length === 0) return toast('ไม่มีข้อมูลสำหรับพิมพ์', '#ef4444');
+    
+    // ดึงข้อมูลหัวกระดาษ
+    const headerInfo = evalDataList.find(d => d.startDate || d.schoolName) || {};
+    let rawSchool = headerInfo.schoolName || appSettings.schoolName || '.......';
+    const displaySchool = rawSchool.startsWith('โรงเรียน') ? rawSchool : 'โรงเรียน' + rawSchool;
+    const dStart = headerInfo.startDate || '.... เดือน ..... พ.ศ. .....';
+    const dEnd = headerInfo.endDate || '.... เดือน ..... พ.ศ. .....';
+
+    toast('⏳ กำลังเตรียมเอกสาร PDF...', '#0ea5e9');
+    
+    const printWindow = window.open('', '_blank');
+    
+    // จัดการเนื้อหา Loop แยกออกมาต่างหาก เพื่อป้องกัน Error จากการซ้อนเครื่องหมาย
+    let blocksHtml = '';
+    evalDataList.forEach((b) => {
+        let cleanTitle = b.title || '';
+        cleanTitle = cleanTitle.replace(/^[0-9]+(\.[0-9]+)*\.?\s*/, '');
+        
+        let imgHtml = '';
+        if (b.imageUrl) {
+            imgHtml = `<div class="pdf-image"><img src="${getDriveThumbnail(b.imageUrl)}" crossorigin="anonymous"></div>`;
+        }
+        
+        blocksHtml += `
+        <div class="pdf-section">
+            <div class="pdf-section-title">${b.order}. ${cleanTitle}</div>
+            <div class="pdf-section-content">${b.content}</div>
+            ${imgHtml}
+        </div>`;
+    });
+
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html lang="th">
+    <head>
+        <meta charset="UTF-8">
+        <title>รายงานประเมินครูผู้ช่วย_ครั้งที่_${currentEvalRound}</title>
+        <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
+        <style>
+            /* ตั้งค่าหน้ากระดาษ PDF */
+            @page { 
+                size: A4 portrait; 
+                margin: 20mm 15mm 20mm 20mm; /* ขอบกระดาษ บน ขวา ล่าง ซ้าย */
+            }
+            body {
+                font-family: 'Sarabun', sans-serif;
+                font-size: 10pt; /* ขนาด 10pt */
+                color: #000;
+                line-height: 1.6;
+                background: #fff;
+                margin: 0;
+                padding: 0;
+                -webkit-print-color-adjust: exact;
+                word-wrap: break-word;
+            }
+            
+            .pdf-header { text-align: center; margin-bottom: 20pt; }
+            .pdf-header .h1 { font-size: 14pt; font-weight: bold; margin-bottom: 6pt; line-height: 1.3; }
+            .pdf-header .h2 { font-size: 12pt; font-weight: bold; margin-bottom: 4pt; }
+            .pdf-header .h3 { font-size: 10pt; margin-bottom: 4pt; }
+            
+            .pdf-section { 
+                margin-bottom: 15pt; 
+                page-break-inside: avoid; /* ป้องกันการตัดเนื้อหาข้ามหน้า */
+            }
+            .pdf-section-title { font-size: 10pt; font-weight: bold; margin-bottom: 6pt; }
+            
+            .pdf-section-content { 
+                font-size: 10pt;
+                margin-bottom: 8pt; 
+            }
+            
+            .pdf-section-content p { 
+                margin-top: 0; 
+                margin-bottom: 8pt; 
+                text-align: left; 
+                white-space: pre-wrap;
+            }
+            
+            .pdf-image { 
+                text-align: center; 
+                margin-top: 10pt; 
+                page-break-inside: avoid; /* ป้องกันรูปภาพถูกหั่นครึ่ง */
+            }
+            .pdf-image img { 
+                max-width: 85%; 
+                max-height: 350px; 
+                border: 1px solid #ddd; 
+                border-radius: 8px; 
+            }
+        </style>
+    </head>
+    <body>
+        <div class="pdf-header">
+            <div class="h1">รายงานผลการปฏิบัติงานการเตรียมความพร้อมและพัฒนาอย่างเข้ม</div>
+            <div class="h2">ตำแหน่งครูผู้ช่วย</div>
+            <div class="h3">ครั้งที่ ${currentEvalRound} ตั้งแต่วันที่ ${dStart} ถึง วันที่ ${dEnd}</div>
+            <div class="h3">${displaySchool} สำนักงานเขตพื้นที่การศึกษามัธยมศึกษาเชียงราย</div>
+            <div class="h3">สำนักงานคณะกรรมการการศึกษาขั้นพื้นฐาน</div>
+            <div class="h3">กระทรวงศึกษาธิการ</div>
+        </div>
+        
+        ${blocksHtml}
+        
+    </body>
+    </html>`;
+
+    printWindow.document.open();
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+
+    // รอ 1.5 วินาทีให้ฟอนต์ Sarabun และรูปภาพโหลดเสร็จ แล้วจึงเรียกหน้าต่าง Print
+    setTimeout(() => {
+        toast('✅ พร้อมบันทึก PDF', '#10b981');
+        printWindow.print();
+    }, 1500);
+};
+
+
+// ฟังก์ชันสำหรับโหลดรายการโฟลเดอร์เอกสารมาแสดงและจัดการในระบบหลังบ้าน
+function loadAdminAlbumsList() {
+    const listDiv = document.getElementById('adminAlbumList');
+    if(!listDiv) return;
+    
+    // ดึงข้อมูลคอลเลกชัน albums เรียงตามเวลาล่าสุด
+    db.collection('albums').orderBy('createdAt', 'desc').onSnapshot(snap => {
+        if(snap.empty) {
+            listDiv.innerHTML = '<p style="color:var(--text-muted); font-size:0.9rem; text-align:center; padding:15px 0;">ยังไม่มีโฟลเดอร์เอกสารในระบบ</p>';
+            return;
+        }
+        
+        let html = '';
+        snap.forEach(doc => {
+            const data = doc.data();
+            html += `
+            <div class="portfolio-item-row" style="border-left: 4px solid var(--c3-yellow); margin-bottom: 10px; padding: 15px 20px;">
+                <div class="portfolio-thumb" style="border:2px solid var(--c3-yellow)20; font-size:1.5rem; color:var(--c3-yellow);">
+                    <i class="fas fa-folder"></i>
+                </div>
+                <div class="portfolio-item-info">
+                    <h4 style="color:var(--text-main); font-weight:700;">${data.name || 'โฟลเดอร์ไม่มีชื่อ'}</h4>
+                    <p style="font-size:0.8rem; color:var(--text-muted);">จำนวนลิงก์ภายในโฟลเดอร์: ${data.files ? data.files.length : 0} รายการ</p>
+                </div>
+                <button class="btn-icon btn-edit" onclick="editAdminAlbum('${doc.id}')" style="margin-right: 5px;">
+                    <i class="fas fa-pen"></i>
+                </button>
+                <button class="btn-icon btn-del" onclick="deleteItemAdmin('albums','${doc.id}','${(data.name || '').replace(/'/g, "\\'")}')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>`;
+        });
+        listDiv.innerHTML = html;
+    }, err => {
+        listDiv.innerHTML = '<p style="color:#ef4444; font-size:0.9rem;">ไม่สามารถโหลดข้อมูลได้ (ตรวจเช็ค Firebase Index)</p>';
+    });
+}
+
+
+
+// ===================================================
+// ระบบจัดการโฟลเดอร์เอกสาร (Google Drive API + เรียงลำดับ)
+// ===================================================
+let allAdminAlbums = [];
+
+// ฟังก์ชันสำหรับดึง ID ของไฟล์หรือโฟลเดอร์จากลิงก์ Google Drive
+function extractDriveIdFromUrl(url) {
+    const m = url.match(/\/folders\/([\w-]{25,})/) || url.match(/\/d\/([\w-]{25,})/) || url.match(/id=([\w-]{25,})/) || url.match(/([\w-]{25,})/);
+    return m ? (m[1] || m[2] || m[3] || m[4] || m[0]) : null;
+}
+
+async function fetchDriveFolderName(folderId, apiKey) {
+    if (!folderId || !apiKey) return null;
+    try {
+        const response = await fetch(`https://www.googleapis.com/drive/v3/files/${folderId}?fields=name,mimeType&key=${apiKey}`);
+        const data = await response.json();
+        if (data && data.name) return data.name;
+    } catch (err) {
+        console.warn('ไม่สามารถดึงชื่อโฟลเดอร์จาก Google Drive ได้:', err);
+    }
+    return null;
+}
+
+// โหลดข้อมูลคลังโฟลเดอร์
+function loadAdminAlbumsList() {
+    const listDiv = document.getElementById('adminAlbumList');
+    if(!listDiv) return;
+    
+    db.collection('albums').onSnapshot(snap => {
+        allAdminAlbums = [];
+        snap.forEach(doc => { allAdminAlbums.push({ id: doc.id, ...doc.data() }); });
+        allAdminAlbums.sort((a, b) => (a.order || 99) - (b.order || 99));
+        renderAdminAlbumsList(15);
+    }, err => {
+        listDiv.innerHTML = '<p style="color:#ef4444; font-size:0.9rem;">ไม่สามารถโหลดข้อมูลโฟลเดอร์ได้</p>';
+    });
+}
+
+function renderAdminAlbumsList(limit = 15) {
+    const listDiv = document.getElementById('adminAlbumList');
+    if(!listDiv) return;
+    
+    if(allAdminAlbums.length === 0) {
+        listDiv.innerHTML = '<p style="color:var(--text-muted); font-size:0.9rem; text-align:center; padding:15px 0;">ยังไม่มีโฟลเดอร์เอกสารในระบบ</p>';
+        return;
+    }
+    
+    const displayAlbums = allAdminAlbums.slice(0, limit);
+    let html = displayAlbums.map(album => `
+        <div class="portfolio-item-row" style="border-left: 4px solid var(--c3-yellow); margin-bottom: 10px; padding: 15px 20px; position: relative;">
+            <div style="position:absolute; top:12px; left:15px; background:#f1f5f9; padding:4px 10px; border-radius:10px; font-size:0.75rem; font-weight:700;">#${album.order || 99}</div>
+            <div class="portfolio-thumb" style="border:2px solid var(--c3-yellow)20; font-size:1.5rem; color:var(--c3-yellow); margin-top:10px;">
+                <i class="fas fa-folder"></i>
+            </div>
+            <div class="portfolio-item-info">
+                <h4 style="color:var(--text-main); font-weight:700;">${album.name || 'โฟลเดอร์ไม่มีชื่อ'}</h4>
+                <p style="font-size:0.8rem; color:var(--text-muted);">จำนวนไฟล์ภายในโฟลเดอร์: ${album.files ? album.files.length : 0} รายการ</p>
+            </div>
+            <button class="btn-icon btn-edit" onclick="editAdminAlbum('${album.id}')" style="margin-right: 5px;"><i class="fas fa-pen"></i></button>
+            <button class="btn-icon btn-del" onclick="deleteItemAdmin('albums','${album.id}','${(album.name || '').replace(/'/g, "\\'")}')"><i class="fas fa-trash"></i></button>
+        </div>`
+    ).join('');
+    
+    if (allAdminAlbums.length > limit) {
+        html += `
+        <div style="width: 100%; text-align: center; margin-top: 20px; margin-bottom: 10px;">
+            <button onclick="renderAdminAlbumsList(${limit + 15})" class="btn-submit bg-c4" style="width:auto; padding:10px 25px; border-radius:10px; border:none; color:#fff; cursor:pointer; font-family:var(--font-main); font-weight:600;">
+                <i class="fas fa-chevron-down"></i> ดูโฟลเดอร์เอกสารเพิ่มเติม
+            </button>
+        </div>`;
+    }
+    listDiv.innerHTML = html;
+}
+
+// ฟังก์ชันล้างค่าฟอร์ม
+function resetAlbumForm() {
+    if(document.getElementById('editingAlbumId')) document.getElementById('editingAlbumId').value = '';
+    if(document.getElementById('impAlbumName')) document.getElementById('impAlbumName').value = '';
+    if(document.getElementById('impFolderLink')) document.getElementById('impFolderLink').value = ''; 
+    if(document.getElementById('albumOrder')) document.getElementById('albumOrder').value = '1'; 
+    if(document.getElementById('albumLinkStatus')) document.getElementById('albumLinkStatus').textContent = 'กรุณากรอกลิงก์โฟลเดอร์และระบบจะตรวจสอบให้โดยอัตโนมัติ';
+    if(document.getElementById('albumFormTitle')) document.getElementById('albumFormTitle').textContent = 'สร้างโฟลเดอร์เอกสารจากลิงก์';
+    if(document.getElementById('btnSaveAlbum')) document.getElementById('btnSaveAlbum').innerHTML = 'บันทึกโฟลเดอร์ลงระบบ';
+    if(document.getElementById('btnCancelEditAlbum')) document.getElementById('btnCancelEditAlbum').style.display = 'none';
+}
+
+// ดึงข้อมูลโฟลเดอร์เก่ามากางเพื่อแก้ไขอัปเดต
+window.editAdminAlbum = function(id) {
+    db.collection('albums').doc(id).get().then(doc => {
+        if(!doc.exists) return;
+        const data = doc.data();
+        document.getElementById('editingAlbumId').value = id;
+        document.getElementById('impAlbumName').value = data.name || '';
+        if(document.getElementById('albumOrder')) document.getElementById('albumOrder').value = data.order || '1'; 
+        if(document.getElementById('impFolderLink')) document.getElementById('impFolderLink').value = data.folderUrl || '';
+        
+        document.getElementById('albumFormTitle').textContent = 'แก้ไขโฟลเดอร์เอกสาร';
+        document.getElementById('btnSaveAlbum').innerHTML = '<i class="fas fa-sync-alt"></i> อัปเดตและดึงไฟล์ใหม่';
+        document.getElementById('btnCancelEditAlbum').style.display = 'inline-block';
+        document.getElementById('albumFormTitle').scrollIntoView({ behavior: 'smooth' });
+    }).catch(err => toast('ไม่สามารถดึงข้อมูลมาแก้ไขได้', '#ef4444'));
+};
+
+// ==========================================
+// Event Listener บันทึกข้อมูลผ่าน Google Drive API
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    const albumLinkInput = document.getElementById('impFolderLink');
+    const albumLinkStatus = document.getElementById('albumLinkStatus');
+    const albumOrderInput = document.getElementById('albumOrder');
+
+    document.getElementById('btnCancelEditAlbum')?.addEventListener('click', resetAlbumForm);
+
+    const workCategoryNameInput = document.getElementById('workCategoryName');
+    const workCategoryLinkInput = document.getElementById('workCategoryLink');
+    const workCategoryStatus = document.getElementById('workCategoryStatus');
+    const workCategoryOrderInput = document.getElementById('workCategoryOrder');
+
+    function resetWorkCategoryForm() {
+        if (document.getElementById('editingWorkCategoryId')) document.getElementById('editingWorkCategoryId').value = '';
+        if (workCategoryNameInput) workCategoryNameInput.value = '';
+        if (document.getElementById('workCategoryDesc')) document.getElementById('workCategoryDesc').value = '';
+        if (workCategoryLinkInput) workCategoryLinkInput.value = '';
+        if (workCategoryOrderInput) workCategoryOrderInput.value = '1';
+        if (workCategoryStatus) workCategoryStatus.textContent = 'กรุณากรอกลิงก์โฟลเดอร์และระบบจะตรวจสอบให้โดยอัตโนมัติ';
+        if (workCategoryStatus) workCategoryStatus.style.color = '#64748b';
+        if (document.getElementById('btnCancelEditWorkCategory')) document.getElementById('btnCancelEditWorkCategory').style.display = 'none';
+        if (document.getElementById('workFormTitle')) document.getElementById('workFormTitle').textContent = 'สร้างบล็อคด้านการปฏิบัติงานจากลิงก์';
+    }
+
+    window.editWorkCategory = function(id) {
+        db.collection('work_categories').doc(id).get().then(doc => {
+            if (!doc.exists) return;
+            const data = doc.data();
+            document.getElementById('editingWorkCategoryId').value = id;
+            if (workCategoryNameInput) workCategoryNameInput.value = data.name || '';
+            if (document.getElementById('workCategoryDesc')) document.getElementById('workCategoryDesc').value = data.description || '';
+            if (workCategoryLinkInput) workCategoryLinkInput.value = data.folderUrl || '';
+            if (workCategoryOrderInput) workCategoryOrderInput.value = data.order || '1';
+            if (document.getElementById('workFormTitle')) document.getElementById('workFormTitle').textContent = 'แก้ไขบล็อคด้านการปฏิบัติงาน';
+            document.getElementById('btnCancelEditWorkCategory').style.display = 'inline-block';
+            document.getElementById('workCategoryLink').scrollIntoView({ behavior: 'smooth' });
+        }).catch(() => toast('ไม่สามารถโหลดข้อมูลหมวดงานได้', '#ef4444'));
+    };
+
+    async function loadAdminWorkCategoriesList() {
+        const listDiv = document.getElementById('adminWorkCategoryList');
+        if (!listDiv) return;
+        try {
+            const snap = await db.collection('work_categories').orderBy('order', 'asc').get();
+            if (snap.empty) {
+                listDiv.innerHTML = '<p style="color:var(--text-muted); font-size:0.9rem; text-align:center; padding:15px 0;">ยังไม่มีหมวดงานในระบบ</p>';
+                return;
+            }
+            let html = '';
+            snap.forEach(doc => {
+                const data = doc.data();
+                const items = data.items || [];
+                html += `
+                <div class="portfolio-item-row" style="border-left: 4px solid var(--c4-blue); margin-bottom: 10px; padding: 15px 20px;">
+                    <div class="portfolio-thumb" style="border:2px solid rgba(96,176,255,0.2); font-size:1.4rem; color:var(--c4-blue);">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                    <div class="portfolio-item-info">
+                        <h4 style="color:var(--text-main); font-weight:700;">${data.name || 'หมวดงานไม่มีชื่อ'}</h4>
+                        <p style="font-size:0.8rem; color:var(--text-muted);">${items.length} รายการ • ${data.description || 'ไม่ระบุคำอธิบาย'}</p>
+                    </div>
+                    <button class="btn-icon btn-edit" onclick="editWorkCategory('${doc.id}')" style="margin-right: 5px;"><i class="fas fa-pen"></i></button>
+                    <button class="btn-icon btn-del" onclick="deleteItemAdmin('work_categories','${doc.id}','${(data.name || '').replace(/'/g, "\\'")}')"><i class="fas fa-trash"></i></button>
+                </div>`;
+            });
+            listDiv.innerHTML = html;
+        } catch (err) {
+            listDiv.innerHTML = '<p style="color:#ef4444; font-size:0.9rem;">ไม่สามารถโหลดรายการด้านการปฏิบัติงานได้</p>';
+        }
+    }
+
+    document.getElementById('btnCancelEditWorkCategory')?.addEventListener('click', resetWorkCategoryForm);
+
+    workCategoryLinkInput?.addEventListener('input', async () => {
+        const link = workCategoryLinkInput.value.trim();
+        const folderId = extractDriveIdFromUrl(link);
+        if (!link) {
+            workCategoryStatus.textContent = 'กรุณากรอกลิงก์โฟลเดอร์และระบบจะตรวจสอบให้โดยอัตโนมัติ';
+            workCategoryStatus.style.color = '#64748b';
+            return;
+        }
+        if (!folderId) {
+            workCategoryStatus.textContent = 'ลิงก์ไม่ถูกต้อง กรุณาใช้ลิงก์ Google Drive โฟลเดอร์';
+            workCategoryStatus.style.color = '#ef4444';
+            return;
+        }
+        workCategoryStatus.textContent = 'กำลังตรวจสอบลิงก์...';
+        workCategoryStatus.style.color = '#3b82f6';
+        const driveName = await fetchDriveFolderName(folderId, 'AIzaSyBLEfMAIUQy32xYV25JkHuQcj8LKvqjW2I');
+        if (driveName && workCategoryNameInput && !workCategoryNameInput.value.trim()) {
+            workCategoryNameInput.value = driveName;
+        }
+        workCategoryStatus.textContent = 'ลิงก์ถูกต้อง ระบบจะดึงรายการงานมาแสดงบนหน้าเว็บไซต์';
+        workCategoryStatus.style.color = '#10b981';
+    });
+
+    document.getElementById('btnSaveWorkCategory')?.addEventListener('click', async () => {
+        const GOOGLE_DRIVE_API_KEY = 'AIzaSyBLEfMAIUQy32xYV25JkHuQcj8LKvqjW2I';
+        const id = document.getElementById('editingWorkCategoryId').value;
+        const name = workCategoryNameInput?.value.trim();
+        const description = document.getElementById('workCategoryDesc')?.value.trim() || '';
+        const orderVal = parseInt(workCategoryOrderInput?.value) || 1;
+        const folderUrl = workCategoryLinkInput?.value.trim();
+
+        if (!name || !folderUrl) {
+            toast('กรุณากรอกชื่อหมวดและวางลิงก์โฟลเดอร์ Google Drive', '#ef4444');
+            return;
+        }
+
+        const folderId = extractDriveIdFromUrl(folderUrl);
+        if (!folderId) {
+            toast('รูปแบบลิงก์ Google Drive ไม่ถูกต้อง', '#ef4444');
+            return;
+        }
+
+        const btn = document.getElementById('btnSaveWorkCategory');
+        const ogText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังดึงข้อมูล...';
+        btn.disabled = true;
+
+        try {
+            const apiUrl = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType,webViewLink)&key=${GOOGLE_DRIVE_API_KEY}`;
+            const response = await fetch(apiUrl);
+            const data = await response.json();
+            if (data.error) throw new Error(data.error.message);
+
+            const items = (data.files || []).map(f => ({
+                name: f.name,
+                url: f.webViewLink || `https://drive.google.com/file/d/${f.id}/view`,
+                driveId: f.id,
+                type: f.mimeType?.includes('image/') ? 'image' : f.mimeType?.includes('pdf') ? 'pdf' : 'other'
+            }));
+
+            const payload = {
+                name,
+                description,
+                folderUrl,
+                order: orderVal,
+                items,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            if (id) {
+                await db.collection('work_categories').doc(id).update(payload);
+                toast('✅ อัปเดตหมวดงานเรียบร้อยแล้ว', '#10b981');
+            } else {
+                await db.collection('work_categories').add({
+                    ...payload,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                toast('✅ เพิ่มหมวดงานเรียบร้อยแล้ว', '#10b981');
+            }
+            resetWorkCategoryForm();
+            await loadAdminWorkCategoriesList();
+        } catch (err) {
+            console.error(err);
+            toast('❌ ดึงข้อมูลล้มเหลว ตรวจสอบลิงก์หรือสิทธิ์แชร์', '#ef4444');
+        } finally {
+            btn.innerHTML = ogText;
+            btn.disabled = false;
+        }
+    });
+
+    loadAdminWorkCategoriesList();
+
+    const updateAlbumOrderAuto = () => {
+        if (!albumOrderInput || albumOrderInput.value) return;
+        db.collection('albums').get().then(snapshot => {
+            const orders = snapshot.docs.map(doc => Number(doc.data().order) || 0);
+            const nextOrder = orders.length ? Math.max(...orders) + 1 : 1;
+            albumOrderInput.value = nextOrder;
+        }).catch(() => {
+            albumOrderInput.value = '1';
+        });
+    };
+
+    albumLinkInput?.addEventListener('input', async () => {
+        const link = albumLinkInput.value.trim();
+        const folderId = extractDriveIdFromUrl(link);
+        const nameInput = document.getElementById('impAlbumName');
+        if (!link) {
+            albumLinkStatus.textContent = 'กรุณากรอกลิงก์โฟลเดอร์และระบบจะตรวจสอบให้โดยอัตโนมัติ';
+            albumLinkStatus.style.color = '#64748b';
+            return;
+        }
+        if (!folderId) {
+            albumLinkStatus.textContent = 'ลิงก์ไม่ถูกต้อง กรุณาใช้ลิงก์ Google Drive โฟลเดอร์';
+            albumLinkStatus.style.color = '#ef4444';
+            return;
+        }
+
+        albumLinkStatus.textContent = 'กำลังดึงชื่อโฟลเดอร์จากลิงก์...';
+        albumLinkStatus.style.color = '#3b82f6';
+
+        const driveName = await fetchDriveFolderName(folderId, 'AIzaSyBLEfMAIUQy32xYV25JkHuQcj8LKvqjW2I');
+        if (driveName && nameInput && !nameInput.value.trim()) {
+            nameInput.value = driveName;
+        }
+
+        albumLinkStatus.textContent = 'ลิงก์ถูกต้อง ระบบจะตรวจสอบและดึงไฟล์ให้โดยอัตโนมัติ';
+        albumLinkStatus.style.color = '#10b981';
+    });
+
+    albumLinkInput?.addEventListener('blur', updateAlbumOrderAuto);
+
+    document.getElementById('btnSaveAlbum')?.addEventListener('click', async () => {
+        // 🔑 ใส่ API Key ที่นี่
+        const GOOGLE_DRIVE_API_KEY = 'AIzaSyBLEfMAIUQy32xYV25JkHuQcj8LKvqjW2I'; 
+        
+        const id = document.getElementById('editingAlbumId').value;
+        const name = document.getElementById('impAlbumName').value.trim();
+        const orderVal = parseInt(document.getElementById('albumOrder').value) || 1;
+        const folderUrl = document.getElementById('impFolderLink')?.value.trim();
+        
+        if(!name || !folderUrl){ 
+            toast('กรุณากรอกชื่อคลังและวางลิงก์โฟลเดอร์ Google Drive', '#ef4444'); 
+            return; 
+        }
+
+        const folderId = extractDriveIdFromUrl(folderUrl);
+        if(!folderId) {
+            toast('รูปแบบลิงก์ Google Drive ไม่ถูกต้อง', '#ef4444'); 
+            return;
+        }
+
+        const btn = document.getElementById('btnSaveAlbum');
+        const ogText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังดึงข้อมูลไฟล์...';
+        btn.disabled = true;
+
+        try {
+            const apiUrl = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType,webViewLink)&key=${GOOGLE_DRIVE_API_KEY}`;
+            const response = await fetch(apiUrl);
+            const data = await response.json();
+
+            if (data.error) throw new Error(data.error.message);
+
+            const files = data.files.map(f => {
+                let fileType = 'other';
+                if (f.mimeType.includes('image/')) fileType = 'image';
+                else if (f.mimeType.includes('pdf')) fileType = 'pdf';
+
+                return {
+                    url: f.webViewLink || `https://drive.google.com/file/d/${f.id}/view`,
+                    driveId: f.id,
+                    type: fileType,
+                    name: f.name
+                };
+            });
+
+            if(files.length === 0) toast('ไม่พบไฟล์ในโฟลเดอร์นี้ หรือยังไม่ได้เปิดแชร์สาธารณะ', '#f59e0b');
+
+            if(id) {
+                await db.collection('albums').doc(id).update({
+                    name: name, order: orderVal, folderUrl: folderUrl, files: files, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                toast('✅ อัปเดตข้อมูลโฟลเดอร์เรียบร้อยแล้ว', '#10b981');
+            } else {
+                const autoOrder = orderVal || 1;
+                await db.collection('albums').add({
+                    name: name, order: autoOrder, folderUrl: folderUrl, files: files, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                toast('✅ บันทึกโฟลเดอร์ใหม่เรียบร้อยแล้ว', '#10b981');
+            }
+            resetAlbumForm();
+        } catch (err) {
+            console.error(err);
+            toast('❌ ดึงข้อมูลล้มเหลว: ตรวจสอบ API Key หรือการแชร์โฟลเดอร์', '#ef4444');
+        } finally {
+            btn.innerHTML = ogText;
+            btn.disabled = false;
+        }
+    });
+});

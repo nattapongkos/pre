@@ -120,7 +120,84 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     // ===================================================
-    // 3. PORTFOLIO (TIMELINE) — โหลด + Render Cards
+    // 3. WORK ACTIVITIES — โหลดข้อมูลจาก Firestore และแสดงแบบตาราง
+    // ===================================================
+    const workTableContainer = document.getElementById('workTableContainer');
+    let allWorkCategories = [];
+
+    function getWorkItemIcon(type) {
+        if (type === 'pdf') return 'fas fa-file-pdf';
+        if (type === 'image') return 'fas fa-image';
+        return 'fas fa-file-lines';
+    }
+
+    function getWorkItemTypeLabel(type) {
+        if (type === 'pdf') return 'PDF';
+        if (type === 'image') return 'รูปภาพ';
+        return 'ไฟล์/ลิงก์';
+    }
+
+    function getWorkItemPreviewUrl(item) {
+        if (item.type === 'image' && item.driveId) {
+            return `https://drive.google.com/thumbnail?id=${item.driveId}&sz=w360`;
+        }
+        return '';
+    }
+
+  function buildWorkItemCard(item) {
+    const previewUrl = getWorkItemPreviewUrl(item);
+    const iconClass = getWorkItemIcon(item.type);
+
+    return `
+        <div class="work-item-card">
+            <div class="work-item-thumb">
+                ${previewUrl ? `<img src="${previewUrl}" alt="${item.name || 'รูปภาพ'}">` : `<i class="${iconClass}"></i>`}
+            </div>
+            <div class="work-item-card-body">
+                <div>
+                    <div class="work-item-type">${getWorkItemTypeLabel(item.type)}</div>
+                    ${item.type === 'image' ? '' : `<h4 class="work-item-title">${item.name || 'รายการไม่มีชื่อ'}</h4>`}
+                </div>
+                <a class="work-item-link" href="${item.url || '#'}" target="_blank" rel="noopener noreferrer">
+                    <i class="fas fa-arrow-up-right-from-square"></i> เปิดไฟล์
+                </a>
+            </div>
+        </div>`;
+}
+
+    function renderWorkCategories() {
+        if (!workTableContainer) return;
+        if (!allWorkCategories.length) {
+            workTableContainer.innerHTML = '<div class="work-empty">ยังไม่มีข้อมูลด้านการปฏิบัติงาน</div>';
+            return;
+        }
+
+        workTableContainer.innerHTML = allWorkCategories.map(category => {
+            const items = category.items || [];
+            const itemsGrid = items.length ? `<div class="work-items-grid">${items.map(buildWorkItemCard).join('')}</div>` : '<div class="work-empty">ยังไม่มีรายการในหมวดนี้</div>';
+
+            return `
+            <div class="work-category-card">
+                <div class="work-category-top">
+                    <div>
+                        <h3>${category.name || 'ด้านการปฏิบัติงาน'}</h3>
+                        <p>${category.description || 'รายการงานและเอกสารที่ใช้จริงในงานประจำวัน'}</p>
+                    </div>
+                    <span class="work-pill">${items.length} รายการ</span>
+                </div>
+                ${itemsGrid}
+            </div>`;
+        }).join('');
+    }
+
+    db.collection('work_categories').orderBy('order', 'asc').onSnapshot((snap) => {
+        allWorkCategories = [];
+        snap.forEach(doc => allWorkCategories.push({ id: doc.id, ...doc.data() }));
+        renderWorkCategories();
+    });
+
+    // ===================================================
+    // 4. PORTFOLIO (TIMELINE) — โหลด + Render Cards
     // ===================================================
     const portfolioCards = document.getElementById('portfolioCards');
 
@@ -239,98 +316,7 @@ document.addEventListener('DOMContentLoaded', () => {
         openModal('modalPortDetail');
     };
 
-    // ===================================================
-    // 4. FILES — โหลดไฟล์ + Filter Tabs (Light Theme Update)
-    // ===================================================
-    const publicFileGrid = document.getElementById('publicFileGrid');
-    const filesTabs = document.getElementById('filesTabs');
-    let allFiles = [];
-    let activeFileTab = '';
-
-    const fileIconMap = {
-        pdf: { icon: 'fa-file-pdf', cls: 'icon-pdf' },
-        document: { icon: 'fa-file-word', cls: 'icon-doc' },
-        image: { icon: 'fa-file-image', cls: 'icon-img' },
-        video: { icon: 'fa-file-video', cls: 'icon-vid' },
-        zip: { icon: 'fa-file-archive', cls: 'icon-zip' },
-        other: { icon: 'fa-file', cls: 'icon-other' }
-    };
-
-   window.renderPublicFiles = function(cat, limit = 6) {
-        if (!publicFileGrid) return;
-        const filtered = cat ? allFiles.filter(f => f.cat === cat || f.type === cat) : allFiles;
-
-        if (filtered.length === 0) {
-            publicFileGrid.innerHTML = `<div class="files-empty"><i class="fas fa-folder-open"></i><p>ไม่มีไฟล์ในหมวดนี้</p></div>`;
-            return;
-        }
-
-        const displayFiles = filtered.slice(0, limit);
-        publicFileGrid.innerHTML = displayFiles.map((item, i) => {
-            const fi = fileIconMap[item.type] || fileIconMap.other;
-            
-            // เช็คประเภทไฟล์และกำหนด Class สีมาตรฐาน
-            let typeClass = "file-other";
-            if(item.type === 'pdf') typeClass = "file-pdf";
-            else if(item.type === 'document') typeClass = "file-doc";
-            else if(item.type === 'image') typeClass = "file-img";
-            else if(item.type === 'video') typeClass = "file-vid";
-            else if(item.type === 'zip') typeClass = "file-zip";
-
-            return `
-            <a href="${item.url || '#'}" target="_blank" class="file-card-public ${typeClass}" style="animation:fadeCardIn 0.4s ease ${(i%6) * 0.05}s both;">
-                <div class="file-card-icon"><i class="fas ${fi.icon} ${fi.cls}"></i></div>
-                <div class="file-card-info">
-                    <div class="file-card-name">${item.name || '(ไม่มีชื่อ)'}</div>
-                    ${item.cat ? `<span class="file-card-cat">${item.cat}</span>` : ''}
-                </div>
-                <div class="icon-download-btn"><i class="fas fa-download"></i></div>
-            </a>`;
-        }).join('');
-
-        if (filtered.length > limit) {
-            publicFileGrid.innerHTML += `
-                <div style="width: 100%; text-align: center; margin-top: 30px; grid-column: 1/-1;">
-                    <button onclick="renderPublicFiles('${cat}', ${limit + 6})" class="btn-signin" style="cursor:pointer; border:none; padding:12px 35px; font-family: var(--font-main); display:inline-flex; align-items:center; gap:8px;">
-                        <i class="fas fa-chevron-down"></i> ดูเอกสารเพิ่มเติม
-                    </button>
-                </div>
-            `;
-        }
-    };
-
-    function buildFileTabs(files) {
-        if (!filesTabs) return;
-        const cats = [...new Set(files.map(f => f.cat).filter(Boolean))];
-
-        filesTabs.innerHTML = `<button class="files-tab-btn active" data-cat="">ทั้งหมด</button>` +
-            cats.map(cat => `<button class="files-tab-btn" data-cat="${cat}">${cat}</button>`).join('');
-
-        filesTabs.querySelectorAll('.files-tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                filesTabs.querySelectorAll('.files-tab-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                activeFileTab = btn.dataset.cat;
-                renderPublicFiles(activeFileTab);
-            });
-        });
-    }
-
-    // Realtime listener ไฟล์ (เปลี่ยนมาเรียงตามลำดับ order จากน้อยไปมาก)
-    db.collection('files').orderBy('order', 'asc').onSnapshot((snap) => {
-        allFiles = [];
-        snap.forEach(doc => allFiles.push({ id: doc.id, ...doc.data() }));
-        buildFileTabs(allFiles);
-        renderPublicFiles(activeFileTab);
-    }, (err) => {
-        console.warn('Files load error:', err);
-        if (publicFileGrid) publicFileGrid.innerHTML = `
-            <div class="files-empty" style="grid-column:1/-1;">
-                <i class="fas fa-exclamation-circle"></i>
-                <p>โหลดไฟล์ไม่สำเร็จ</p>
-            </div>`;
-    });
-
+    
     // ===================================================
     // 5. CARD ACTIONS — click effect
     // ===================================================
@@ -480,5 +466,97 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+    // ===================================================
+// ส่วนต่อขยาย: แสดงผลประเมินครูผู้ช่วยหน้าแรก (Index)
+// ===================================================
+let allFrontEvals = [];
 
+let evalSectionVisible = true;
+
+function applyEvalSectionVisibility(enabled) {
+    evalSectionVisible = enabled !== false;
+    const section = document.getElementById('evalFrontSection');
+    const navLink = document.querySelector('a[data-target="eval"]');
+    if (section) section.style.display = evalSectionVisible ? '' : 'none';
+    if (navLink) navLink.style.display = evalSectionVisible ? '' : 'none';
+    if (!evalSectionVisible) {
+        const container = document.getElementById('evalFrontContainer');
+        if (container) container.innerHTML = '';
+    }
+}
+
+// โหลดข้อมูลแบบ Realtime เก็บไว้
+db.collection('evaluations').onSnapshot((snap) => {
+    allFrontEvals = [];
+    snap.forEach(doc => allFrontEvals.push({ id: doc.id, ...doc.data() }));
+    if (evalSectionVisible) {
+        loadFrontEval(1);
+    }
 });
+
+db.collection('settings').doc('eval_visibility').onSnapshot((doc) => {
+    const enabled = doc.exists ? (doc.data().enabled !== false) : true;
+    applyEvalSectionVisibility(enabled);
+});
+
+// ฟังก์ชันสำหรับแท็บในหน้า Index
+window.loadFrontEval = function(round) {
+    // จัดการเปลี่ยนสีแท็บ
+    const tabs = document.querySelectorAll('#evalFrontTabs .files-tab-btn');
+    if(tabs.length > 0) {
+        tabs.forEach((t, i) => {
+            if(i + 1 === round) t.classList.add('active');
+            else t.classList.remove('active');
+        });
+    }
+
+    const container = document.getElementById('evalFrontContainer');
+    if(!container) return;
+
+    const filtered = allFrontEvals.filter(e => e.round === round).sort((a, b) => a.order - b.order);
+
+    if (filtered.length === 0) {
+        container.innerHTML = `
+        <div style="background: white; border-radius: 20px; padding: 50px; text-align: center; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
+            <i class="fas fa-folder-open" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 15px;"></i>
+            <p style="color: #64748b; font-size: 1.1rem; margin:0;">ยังไม่มีข้อมูลการประเมินในรอบนี้</p>
+        </div>`;
+        return;
+    }
+
+    // สร้างการ์ดแสดงผล (ในไฟล์ script.js)
+    container.innerHTML = filtered.map((b, i) => {
+        let imgHtml = '';
+        if (b.imageUrl) {
+            let targetUrl = b.imageUrl;
+            const match = targetUrl.match(/id=([a-zA-Z0-9_-]+)/); 
+            if(match) targetUrl = `https://drive.google.com/thumbnail?id=${match[1]}&sz=w800`;
+            imgHtml = `<img src="${targetUrl}" class="eval-front-img">`;
+        }
+
+        return `
+        <div class="eval-front-card" style="animation: fadeCardIn 0.4s ease ${i * 0.1}s both;">
+            <div class="eval-front-card-inner">
+                <div class="eval-front-card-number">${b.order || i+1}</div>
+                <div class="eval-front-card-content">
+                    <h3>${b.title}</h3>
+                    <div class="eval-front-card-text">${b.content}</div>
+                    ${imgHtml}
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+};
+
+
+
+
+
+
+
+
+
+}); //ตัวปิดฟังชั่นต้องนำไว้ในนี้
+
+
+

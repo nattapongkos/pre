@@ -7,7 +7,7 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.2/tinymce.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         /* ปิดการล้างค่า CSS เดิม เพื่อไม่ให้หน้าแอดมินพัง */
@@ -96,10 +96,26 @@
             <li data-tab="banner"><i class="fas fa-images"></i> แบนเนอร์</li>
             <li data-tab="profile"><i class="fas fa-id-card"></i> โปรไฟล์</li>
             <li data-tab="portfolio"><i class="fas fa-palette"></i> ผลงาน</li>
+            <li data-tab="work"><i class="fas fa-briefcase"></i> ด้านการปฏิบัติงาน</li>
             <li data-tab="files"><i class="fas fa-folder-open"></i> ไฟล์</li>
             
             <hr style="margin: 15px 20px; border: 0; border-top: 1px solid #e2e8f0;">
             
+           
+            
+            <li id="evalToggle" class="menu-group-header">
+                <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                    <span><i class="fas fa-chalkboard-teacher"></i> ประเมินครูผู้ช่วย</span>
+                    <i class="fas fa-chevron-down toggle-icon" id="evalChevron"></i>
+                </div>
+            </li>
+            <div class="sub-menu-container collapsed" id="evalSubMenu">
+                <li data-tab="eval_1"><i class="fas fa-file-signature"></i> ครั้งที่ 1</li>
+                <li data-tab="eval_2"><i class="fas fa-file-signature"></i> ครั้งที่ 2</li>
+                <li data-tab="eval_3"><i class="fas fa-file-signature"></i> ครั้งที่ 3</li>
+                <li data-tab="eval_4"><i class="fas fa-file-signature"></i> ครั้งที่ 4</li>
+            </div>
+
             <li id="homeVisitToggle" class="menu-group-header">
                 <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
                     <span><i class="fas fa-house-user"></i> ระบบเยี่ยมบ้าน</span>
@@ -155,22 +171,19 @@
                         <i class="fas fa-folder-open"></i>
                         <div class="stat-info">
                             <h3 id="stat-files">0</h3>
-                            <p>ไฟล์และเอกสารทั้งหมด</p>
-                        </div>
+                            <p>โฟลเดอร์เอกสารทั้งหมด</p> </div>
                     </div>
                     <div class="stat-card-admin bg-c1">
                         <i class="fas fa-file-pdf"></i>
                         <div class="stat-info">
                             <h3 id="stat-docs">0</h3>
-                            <p>เอกสาร (PDF, Word)</p>
-                        </div>
+                            <p>เอกสาร PDF ในคลัง</p> </div>
                     </div>
                     <div class="stat-card-admin bg-c7">
                         <i class="fas fa-photo-video"></i>
                         <div class="stat-info">
                             <h3 id="stat-media">0</h3>
-                            <p>สื่อมัลติมีเดีย (รูป, วิดีโอ)</p>
-                        </div>
+                            <p>รูปภาพและสื่อในคลัง</p> </div>
                     </div>
                 </div>
             </section>
@@ -240,18 +253,59 @@
                 <div id="portList"><div class="loading-row"><div class="spinner"></div> กำลังโหลดข้อมูล...</div></div>
             </section>
 
-            <section id="files" class="tab-content">
-                <h2 class="section-title">จัดการไฟล์</h2>
-                <div class="files-header">
-                    <button id="btnAddFile" class="btn-submit bg-c4" style="width:auto;padding:12px 25px;"><i class="fas fa-upload"></i> อัปโหลดไฟล์ใหม่</button>
-                    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-                        <div class="search-box"><i class="fas fa-search"></i><input type="text" id="fileSearch" placeholder="ค้นหาไฟล์..."></div>
-                        <select id="fileTypeFilter" style="padding:10px 15px;border:1px solid #e2e8f0;border-radius:12px;outline:none;">
-                            <option value="">ทุกประเภท</option><option value="pdf">PDF</option><option value="image">รูปภาพ</option><option value="video">วิดีโอ</option><option value="document">เอกสาร</option><option value="other">อื่นๆ</option>
-                        </select>
+            <section id="work" class="tab-content">
+                <h2 class="section-title">จัดการด้านการปฏิบัติงาน</h2>
+                <div style="background:#fff;border-radius:12px;padding:16px;margin-bottom:18px;box-shadow:0 6px 18px rgba(2,6,23,0.04);">
+                    <h3 id="workFormTitle" style="margin:0 0 8px 0;font-size:1rem;font-weight:700;">สร้างบล็อคด้านการปฏิบัติงานจากลิงก์</h3>
+                    <p style="margin:0 0 10px 0;color:#64748b;font-size:0.9rem;">วางลิงก์โฟลเดอร์ Google Drive เพื่อดึงรายการงานและแสดงบนหน้าเว็บไซต์ในรูปแบบตาราง</p>
+
+                    <input type="hidden" id="editingWorkCategoryId">
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start;margin-bottom: 12px;">
+                        <input id="workCategoryName" type="text" placeholder="ชื่อหมวด เช่น ด้านการปฏิบัติงาน" style="flex:1;padding:10px;border:1px solid #e2e8f0;border-radius:10px;">
+                        <input id="workCategoryOrder" type="number" placeholder="ลำดับ" style="width:90px;padding:10px;border:1px solid #e2e8f0;border-radius:10px;" value="1">
+                        <button id="btnSaveWorkCategory" type="button" class="btn-submit bg-c4" style="padding:10px 20px;border-radius:10px;border:none;color:#fff;width:auto;">บันทึกหมวดงาน</button>
+                        <button id="btnCancelEditWorkCategory" type="button" class="btn-submit" style="padding:10px 20px;border-radius:10px;border:1px solid #e2e8f0;background:#fff;color:var(--text-muted);width:auto;display:none;">ยกเลิก</button>
+                    </div>
+                    <textarea id="workCategoryDesc" rows="2" placeholder="คำอธิบายสั้น ๆ ของหมวดงาน" style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:10px;"></textarea>
+                    <input id="workCategoryLink" type="text" placeholder="วางลิงก์โฟลเดอร์ Google Drive" style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:10px;">
+                    <p id="workCategoryStatus" style="margin:8px 0 0 0; color:#64748b; font-size:0.85rem;">กรุณากรอกลิงก์โฟลเดอร์และระบบจะตรวจสอบให้โดยอัตโนมัติ</p>
+                </div>
+
+                <div style="background:#fff;border-radius:12px;padding:16px;box-shadow:0 6px 18px rgba(2,6,23,0.04);">
+                    <h3 style="margin:0 0 12px 0;font-size:1rem;font-weight:700;"><i class="fas fa-briefcase text-c4-blue"></i> รายการด้านการปฏิบัติงานในระบบ</h3>
+                    <div id="adminWorkCategoryList">
+                        <p style="color:var(--text-muted); font-size:0.9rem; text-align:center; padding:15px 0;">กำลังโหลดรายการ...</p>
                     </div>
                 </div>
-                <div id="fileGrid" class="files-grid"><div class="loading-row" style="grid-column:1/-1"><div class="spinner"></div> กำลังโหลดข้อมูล...</div></div>
+            </section>
+
+            <section id="files" class="tab-content">
+                <h2 class="section-title">จัดการไฟล์</h2>
+
+                <div style="background:#fff;border-radius:12px;padding:16px;margin-bottom:18px;box-shadow:0 6px 18px rgba(2,6,23,0.04);">
+                    <h3 id="albumFormTitle" style="margin:0 0 8px 0;font-size:1rem;font-weight:700;">สร้างโฟลเดอร์เอกสารจากลิงก์</h3>
+                    <p style="margin:0 0 10px 0;color:#64748b;font-size:0.9rem;">ตั้งชื่อโฟลเดอร์ และวางลิงก์ Google Drive (โฟลเดอร์ต้องเปิดแชร์สาธารณะ) ระบบจะดึงไฟล์มาแยกประเภทให้อัตโนมัติ</p>
+                    
+                    <input type="hidden" id="editingAlbumId">
+                    
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start;margin-bottom: 12px;">
+                        <input id="impAlbumName" type="text" placeholder="ชื่อโฟลเดอร์ เช่น แผนการจัดกิจกรรมการเรียนรู้" style="flex:1;padding:10px;border:1px solid #e2e8f0;border-radius:10px;">
+                        <input id="albumOrder" type="number" placeholder="ลำดับ" style="width:90px;padding:10px;border:1px solid #e2e8f0;border-radius:10px;" value="1">
+                        <button id="btnSaveAlbum" type="button" class="btn-submit bg-c5" style="padding:10px 20px;border-radius:10px;border:none;color:#fff;width:auto;">บันทึกโฟลเดอร์ลงระบบ</button>
+                        <button id="btnCancelEditAlbum" type="button" class="btn-submit" style="padding:10px 20px;border-radius:10px;border:1px solid #e2e8f0;background:#fff;color:var(--text-muted);width:auto;display:none;">ยกเลิก</button>
+                    </div>
+                    
+                    <input id="impFolderLink" type="text" placeholder="วางลิงก์โฟลเดอร์ Google Drive (ต้องตั้งค่าแชร์เป็น 'ทุกคนที่มีลิงก์')" style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:10px;">
+                    <p id="albumLinkStatus" style="margin:8px 0 0 0; color:#64748b; font-size:0.85rem;">กรุณากรอกลิงก์โฟลเดอร์และระบบจะตรวจสอบให้โดยอัตโนมัติ</p>
+                </div>
+
+                <div style="background:#fff;border-radius:12px;padding:16px;box-shadow:0 6px 18px rgba(2,6,23,0.04);margin-bottom:20px;">
+                    <h3 style="margin:0 0 12px 0;font-size:1rem;font-weight:700;"><i class="fas fa-folder text-c3-yellow"></i> รายการโฟลเดอร์เอกสารในระบบ</h3>
+                    <div id="adminAlbumList">
+                        <p style="color:var(--text-muted); font-size:0.9rem; text-align:center; padding:15px 0;">กำลังโหลดรายการโฟลเดอร์...</p>
+                    </div>
+                </div>
+
             </section>
 
             <section id="visit_dashboard" class="tab-content space-y-6">
@@ -487,6 +541,22 @@
                 </div>
             </section>
 
+            <section id="eval_main" class="tab-content space-y-6">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 id="evalMainTitle" class="font-semibold text-2xl text-slate-900 mb-1" style="font-family:'Kanit';">ประเมินครูผู้ช่วย</h2>
+                        <p class="text-slate-500 text-sm">เพิ่มลบข้อมูล รูปภาพ แบบอิสระตามองค์ประกอบการประเมิน</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="exportEvalPDF()" class="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2 transition shadow-sm border-none cursor-pointer"><i data-lucide="printer" class="w-4 h-4"></i> พิมพ์ PDF</button>
+                        <button onclick="openEvalModal()" class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2 transition shadow-sm border-none cursor-pointer"><i data-lucide="plus" class="w-4 h-4"></i> เพิ่มบล็อคข้อมูล</button>
+                    </div>
+                </div>
+                <div id="evalBlocksContainer" class="space-y-4">
+                    </div>
+            </section>
+
+
             <section id="visit_settings" class="tab-content space-y-6">
                 <h2 class="font-semibold text-2xl text-slate-900 mb-1" style="font-family:'Kanit';">การตั้งค่าระบบเยี่ยมบ้าน</h2>
                 <div class="bg-white rounded-2xl border border-slate-200 p-6 md:p-8 max-w-2xl space-y-6" style="box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
@@ -494,6 +564,15 @@
                     <div><label class="block text-sm font-medium mb-2">ชื่อครูประจำชั้น</label><input id="set_teacher" class="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm bg-slate-50 outline-none"></div>
                     <div><label class="block text-sm font-medium mb-2">พิกัด GPS โรงเรียน</label><input id="set_school_gps" placeholder="เช่น 13.736717, 100.523186" class="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm bg-slate-50 outline-none"></div>
                     <div><label class="block text-sm font-medium mb-2">Google Apps Script Web App URL</label> <input id="set_api" type="url" class="w-full border border-indigo-200 bg-indigo-50 rounded-lg px-4 py-3 text-sm outline-none"></div>
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                        <label class="flex items-center justify-between gap-4 cursor-pointer">
+                            <div>
+                                <div class="font-medium text-slate-800">แสดง/ซ่อนบล็อค “ประเมินครูผู้ช่วย” บนหน้าเว็บไซต์</div>
+                                <div class="text-xs text-slate-500 mt-1">ปิดไว้จะซ่อนส่วนนี้จากผู้ชมทั้งหมด</div>
+                            </div>
+                            <input id="evalSectionToggle" type="checkbox" class="w-5 h-5 accent-teal-600">
+                        </label>
+                    </div>
                     <button onclick="saveSettings()" class="bg-slate-800 text-white px-6 py-3 rounded-xl font-medium w-full mt-4 shadow-sm border-none cursor-pointer hover:bg-slate-900 transition">บันทึกการตั้งค่า</button>
                 </div>
             </section>
@@ -546,23 +625,7 @@
     </div>
 </div>
 
-<div class="modal-overlay" id="modalFile">
-    <div class="modal-box">
-        <div class="modal-header">
-            <h3><i class="fas fa-upload c4-text"></i> อัปโหลดไฟล์ใหม่</h3>
-            <button class="modal-close" data-close="modalFile"><i class="fas fa-times"></i></button>
-        </div>
-        <form id="fileUploadForm">
-            <div class="input-group"><label>ชื่อไฟล์</label><input type="text" id="fileName" required></div>
-            <div class="input-group"><label>ประเภทไฟล์</label><select id="fileType"><option value="pdf">PDF</option><option value="document">เอกสาร</option><option value="image">รูปภาพ</option><option value="video">วิดีโอ</option><option value="other">อื่นๆ</option></select></div>
-            <div class="input-group"><label>ลิงก์ไฟล์</label><input type="text" id="fileUrl" required></div>
-            <div class="input-group"><label>คำอธิบายไฟล์</label><textarea id="fileDesc" rows="2"></textarea></div>
-            <div class="input-group"><label>หมวดหมู่</label><input type="text" id="fileCat"></div>
-            <div class="input-group"><label>ลำดับ</label><input type="number" id="fileOrder" value="1"></div>
-            <button type="submit" class="btn-submit bg-c4"><i class="fas fa-save"></i> บันทึกข้อมูลไฟล์</button>
-        </form>
-    </div>
-</div>
+
 
 <div class="modal-overlay" id="modalConfirmDelete">
     <div class="modal-box" style="max-width:380px;">
@@ -605,6 +668,72 @@
         </div>
     </div>
 </div>
+
+
+
+<div class="modal-overlay" id="modalEvalBlock">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 id="modalEvalTitle"><i class="fas fa-edit c5-text"></i> จัดการบล็อคประเมิน</h3>
+            <button class="modal-close" data-close="modalEvalBlock"><i class="fas fa-times"></i></button>
+        </div>
+        <form id="evalBlockForm">
+            <input type="hidden" id="evalBlockId">
+            
+            <div class="input-group">
+                <label>หัวข้อการประเมิน</label>
+                <input type="text" id="evalTitle" required placeholder="เช่น หมวดที่ 1 การปฏิบัติตน...">
+            </div>
+            
+            <div id="evalHeaderSection" style="background: rgba(96, 176, 255, 0.05); border-radius: 16px; margin-bottom: 25px; border: 1px dashed var(--c4-blue); overflow: hidden; transition: all 0.3s ease;">
+                <div onclick="toggleEvalHeader()" style="padding: 12px 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: rgba(96, 176, 255, 0.1);">
+                    <span style="font-size: 0.85rem; font-weight: 800; color: var(--c4-blue);">
+                        <i class="fas fa-file-alt"></i> ข้อมูลหัวกระดาษ PDF (วันที่/ชื่อโรงเรียน)
+                    </span>
+                    <i class="fas fa-chevron-down" id="evalHeaderChevron" style="font-size: 0.7rem; color: var(--c4-blue); transition: 0.3s;"></i>
+                </div>
+                
+                <div id="evalHeaderContent" style="padding: 20px 20px 5px 20px;">
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                        <div class="input-group" style="flex: 1; min-width: 150px;">
+                            <label style="font-size: 0.8rem; color: var(--color-gray);">ตั้งแต่วันที่</label>
+                            <input type="text" id="evalStartDate" placeholder="เช่น 1 พฤษภาคม 2569">
+                        </div>
+                        <div class="input-group" style="flex: 1; min-width: 150px;">
+                            <label style="font-size: 0.8rem; color: var(--color-gray);">ถึงวันที่</label>
+                            <input type="text" id="evalEndDate" placeholder="เช่น 30 กันยายน 2569">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label style="font-size: 0.8rem; color: var(--color-gray);">ชื่อโรงเรียนในรายงาน</label>
+                        <input type="text" id="evalSchoolName" placeholder="ระบุชื่อโรงเรียนเต็ม">
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>รายละเอียด / สรุปผล</label>
+                <textarea id="evalContent" rows="6" placeholder="พิมพ์เนื้อหารายละเอียด..."></textarea>
+            </div>
+            
+            <div class="input-group">
+                <label>รูปภาพแนบ</label>
+                <input type="file" id="evalImageUpload" accept="image/*" class="w-full mb-2">
+                <input type="hidden" id="evalImageUrl">
+                <div class="img-preview-box hidden" id="evalImagePreviewContainer">
+                    <img id="evalImagePreview" src="" style="max-height: 200px; border-radius: 8px;">
+                </div>
+                <p id="evalImageStatus" class="text-xs text-sky-600 mt-2"></p>
+            </div>
+            <div class="input-group"><label>ลำดับแสดงผล</label><input type="number" id="evalOrder" value="1"></div>
+            
+            <button type="submit" class="btn-submit bg-c5" id="btnSaveEvalBlock">
+                <i class="fas fa-save"></i> บันทึกข้อมูลบล็อคนี้
+            </button>
+        </form>
+    </div>
+</div>
+
 
 <div class="toast" id="toastAdmin">
     <i class="fas fa-check-circle"></i>

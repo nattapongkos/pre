@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>พื้นที่แห่งการเรียนรู้ | EduSpace</title>
+    <title>e-Portfolio</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -14,18 +14,18 @@
 
     <header class="top-header">
         <div class="header-logo">
-            <img src="https://api.dicebear.com/9.x/shapes/svg?seed=EduSpace" alt="Logo" class="logo-icon">
-            <span class="logo-text c5-text">พื้นที่แห่งการเรียนรู้</span>
+            <img src="https://api.dicebear.com/9.x/shapes/svg?seed=LearningPlatform" alt="Logo" class="logo-icon">
         </div>
 
         <div class="header-center-nav">
             <div class="nav-menu" id="mainNavMenu">
+                
                 <a href="#" class="active" data-target="hero"><i class="fas fa-rocket"></i> วันนี้</a>
                 <a href="#portfolioSection" data-target="portfolio"><i class="fas fa-palette"></i> ผลงาน</a>
                 <a href="#filesSection" data-target="files"><i class="fas fa-folder-open"></i> ไฟล์ต่างๆ</a>
+                <a href="#evalFrontSection" data-target="eval"><i class="fas fa-chalkboard-teacher"></i> ประเมินครูผู้ช่วย</a>
             </div>
             <div class="nav-actions">
-                <button class="icon-btn" id="searchBtn"><i class="fas fa-search"></i></button>
                 <button class="icon-btn" id="mobile-menu-btn"><i class="fas fa-bars"></i></button>
             </div>
         </div>
@@ -51,14 +51,13 @@
     </section>
 
     <div class="toolbar-divider">
-        <div class="toolbar-line"></div>
-        <div class="toolbar-icons">
-            <div class="t-icon bg-c3"><i class="fas fa-star"></i></div>
-            <div class="t-icon bg-c10"><i class="fas fa-code"></i></div>
-            <div class="t-icon bg-c4"><i class="fas fa-cubes"></i></div>
-            <div class="t-icon bg-c9"><i class="fas fa-laptop-code"></i></div>
-            <div class="t-icon bg-c6"><i class="fas fa-book"></i></div>
-        </div>
+    <div class="toolbar-capsule">
+        <div class="t-icon" title="ไฮไลท์"><i class="fas fa-star"></i></div>
+        <div class="t-icon" title="ซอร์สโค้ด"><i class="fas fa-code"></i></div>
+        <div class="t-icon" title="บทเรียน"><i class="fas fa-cubes"></i></div>
+        <div class="t-icon" title="ห้องเรียนออนไลน์"><i class="fas fa-laptop-code"></i></div>
+        <div class="t-icon" title="คลังหนังสือ"><i class="fas fa-book"></i></div>
+    </div>
     </div>
 
     <section class="profile-section" id="profileSection">
@@ -105,6 +104,20 @@
         </div>
     </section>
 
+    <section class="work-section" id="workSection">
+        <div class="work-section-header">
+            <div class="work-header-card">
+                <div class="work-header-icon"><i class="fas fa-briefcase"></i></div>
+                <div>
+                    <span class="work-badge">📋 ด้านการปฏิบัติงาน</span>
+                    <h2>รายการงานและเอกสารที่ใช้จริงในงานประจำวัน</h2>
+                    <p>เรียบเรียงจากลิงก์ Google Drive เพื่อให้เข้าถึงได้สะดวกและดูทันสมัย</p>
+                </div>
+            </div>
+        </div>
+        <div id="workTableContainer" class="work-table-container"></div>
+    </section>
+
     <section class="portfolio-section" id="portfolioSection">
         
         <div class="portfolio-banner-premium">
@@ -116,7 +129,6 @@
             <i class="fas fa-star floating-icon icon-star"></i>
 
             <div class="banner-content-glass">
-                <span class="banner-badge">✨ Showcase</span>
                 <h2>แกลลอรีผลงานและ สื่อการสอน</h2>
                 <p>รวมคลังความรู้และนวัตกรรมการเรียนรู้สร้างสรรค์ โดยคุณครูและนักเรียน</p>
             </div>
@@ -141,16 +153,8 @@
             <img src="https://api.dicebear.com/9.x/fun-emoji/svg?seed=StudentGirl&backgroundColor=transparent" class="banner-char char-right" alt="Student">
         </div>
 
-        <div class="files-tabs" id="filesTabs">
-            <button class="files-tab-btn active" data-cat="">ทั้งหมด</button>
-        </div>
-
-        <div class="files-grid-public" id="publicFileGrid">
-            <div class="cards-loading" style="grid-column:1/-1;">
-                <div class="cards-spinner"></div>
-                กำลังโหลดไฟล์...
-            </div>
-        </div>
+        <div id="albumWrapper" style="width: 100%; max-width: 1100px; margin: 40px auto 0; padding: 0 5%;"></div>
+        
     </section>
 
 
@@ -208,13 +212,30 @@
 
 
 
+    <section class="eval-front-section" id="evalFrontSection" style="padding: 80px 5%; background: linear-gradient(to bottom, #ffffff 0%, #f4f7fe 100%);">
+        <div style="text-align: center; margin-bottom: 40px; background: linear-gradient(135deg, rgba(30, 58, 138, 0.7) 0%, rgba(15, 23, 42, 0.85) 100%); padding: 60px 20px; border-top: 1px solid rgba(255, 255, 255, 0.15); border-bottom: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 15px 35px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); width: 100vw; position: relative; left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw;">
+    <span style="background: rgba(255, 255, 255, 0.1); color: #60b0ff; padding: 6px 18px; border-radius: 20px; font-weight: 800; font-size: 0.85rem; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 4px 15px rgba(0,0,0,0.1); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);">ประเมิน</span>
+    <h2 style="font-size: 2.5rem; font-weight: 800; color: #ffffff; margin-top: 15px; text-shadow: 0 4px 15px rgba(0,0,0,0.3);">ประเมินครูผู้ช่วย</h2>
+    <p style="color: #cbd5e1; font-size: 1.1rem; margin-top: 8px;">รายงานผลการปฏิบัติงาน การเตรียมความพร้อมและพัฒนาอย่างเข้ม</p>
+</div>
+        
+        <div class="files-tabs" id="evalFrontTabs">
+            <button class="files-tab-btn active" onclick="loadFrontEval(1)">ครั้งที่ 1</button>
+            <button class="files-tab-btn" onclick="loadFrontEval(2)">ครั้งที่ 2</button>
+            <button class="files-tab-btn" onclick="loadFrontEval(3)">ครั้งที่ 3</button>
+            <button class="files-tab-btn" onclick="loadFrontEval(4)">ครั้งที่ 4</button>
+        </div>
 
+        <div id="evalFrontContainer" style="max-width: 850px; margin: 0 auto; display: flex; flex-direction: column; gap: 25px;">
+            <div class="text-center p-10 text-gray-400"><i class="fas fa-spinner fa-spin text-3xl mb-3"></i><br>กำลังโหลดข้อมูล...</div>
+        </div>
+    </section>
 
 
     <footer class="site-footer">
         <div class="footer-container">
             <div class="footer-brand-minimal">
-                <h3 class="c1-text">พื้นที่แห่งการเรียนรู้</h3>
+                <h3 class="c1-text">EduSpace</h3>
                 <p>แพลตฟอร์มเพื่อการพัฒนาศักยภาพผู้เรียนสู่อนาคต</p>
                 <div class="contact-info">
                     <p><i class="fas fa-envelope"></i> contact@school.ac.th</p>
@@ -261,5 +282,673 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="script.js"></script>
+        
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!document.getElementById('popup-image-loading-style')) {
+            const style = document.createElement('style');
+            style.id = 'popup-image-loading-style';
+            style.textContent = `
+                @keyframes spin {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // ดึงการเชื่อมต่อ db จากระบบหลัก
+        const db = firebase.firestore();
+        
+        function extractDriveId(url){ const m = url.match(/\/d\/([\w-]{25,})/) || url.match(/id=([\w-]{25,})/) || url.match(/([\w-]{25,})/); return m? (m[1]||m[2]||m[0]) : null; }
+        function detectType(url){ const u = (url||'').split('?')[0].split('#')[0]; if(/\.(jpe?g|png|gif|webp)$/i.test(u)) return 'image'; if(/\.pdf$/i.test(u)) return 'pdf'; return 'other'; }
+        function imgUrlFromDriveId(id){ return `https://drive.google.com/thumbnail?id=${id}&sz=w800`; }
+        function pdfPreviewFromDriveId(id){ return `https://drive.google.com/file/d/${id}/preview`; }
+        function fullImageUrlFromDriveId(id){ return `https://drive.google.com/uc?export=view&id=${id}`; }
+        window.openImagePopup = function(url, title = '') {
+            const existing = document.getElementById('imagePopupModal');
+            if (existing) existing.remove();
+
+            const overlay = document.createElement('div');
+            overlay.id = 'imagePopupModal';
+            overlay.style.position = 'fixed';
+            overlay.style.inset = '0';
+            overlay.style.background = 'rgba(2, 6, 23, 0.82)';
+            overlay.style.backdropFilter = 'blur(8px)';
+            overlay.style.display = 'flex';
+            overlay.style.alignItems = 'center';
+            overlay.style.justifyContent = 'center';
+            overlay.style.zIndex = '5000';
+            overlay.style.padding = '20px';
+            overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+
+            const box = document.createElement('div');
+            box.style.position = 'relative';
+            box.style.width = '100%';
+            box.style.maxWidth = '920px';
+            box.style.maxHeight = '90vh';
+            box.style.display = 'flex';
+            box.style.flexDirection = 'column';
+            box.style.gap = '10px';
+
+            const topBar = document.createElement('div');
+            topBar.style.display = 'flex';
+            topBar.style.justifyContent = 'flex-end';
+            topBar.innerHTML = `<button type="button" style="border:none; width:40px; height:40px; border-radius:50%; background:white; color:#334155; font-size:1.1rem; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,0.15);">✕</button>`;
+            topBar.querySelector('button').onclick = () => overlay.remove();
+
+            const imageWrap = document.createElement('div');
+            imageWrap.style.background = '#ffffff';
+            imageWrap.style.borderRadius = '20px';
+            imageWrap.style.overflow = 'hidden';
+            imageWrap.style.boxShadow = '0 20px 45px rgba(0,0,0,0.25)';
+
+            const loadingBox = document.createElement('div');
+            loadingBox.style.display = 'flex';
+            loadingBox.style.flexDirection = 'column';
+            loadingBox.style.alignItems = 'center';
+            loadingBox.style.justifyContent = 'center';
+            loadingBox.style.minHeight = '260px';
+            loadingBox.style.padding = '24px';
+            loadingBox.style.color = '#64748b';
+            loadingBox.innerHTML = `
+                <div style="width:44px; height:44px; border:4px solid rgba(96,176,255,0.25); border-top-color:#60b0ff; border-radius:50%; animation:spin 0.9s linear infinite;"></div>
+                <div style="margin-top:12px; font-weight:700;">กำลังโหลดภาพ...</div>
+            `;
+            imageWrap.appendChild(loadingBox);
+
+            const image = document.createElement('img');
+            image.alt = title || 'รูปภาพ';
+            image.style.display = 'none';
+            image.style.width = '100%';
+            image.style.maxHeight = '78vh';
+            image.style.objectFit = 'contain';
+            image.style.background = '#f8fafc';
+
+            const driveId = extractDriveId(url);
+            const candidateUrls = [];
+            if (url) candidateUrls.push(url);
+            if (driveId) {
+                candidateUrls.push(`https://drive.google.com/thumbnail?id=${driveId}&sz=w1024`);
+                candidateUrls.push(`https://drive.google.com/uc?export=view&id=${driveId}`);
+                candidateUrls.push(`https://lh3.googleusercontent.com/d/${driveId}?authuser=0`);
+                candidateUrls.push(`https://drive.google.com/file/d/${driveId}/view?usp=sharing`);
+            }
+
+            let currentIndex = 0;
+            const tryNextUrl = () => {
+                if (currentIndex >= candidateUrls.length) {
+                    loadingBox.style.display = 'none';
+                    image.style.display = 'block';
+                    image.src = 'https://via.placeholder.com/800x500?text=No+Image';
+                    image.alt = 'ไม่สามารถโหลดภาพได้';
+                    return;
+                }
+                image.src = candidateUrls[currentIndex];
+                currentIndex += 1;
+            };
+            image.onload = () => {
+                loadingBox.style.display = 'none';
+                image.style.display = 'block';
+            };
+            image.onerror = tryNextUrl;
+            tryNextUrl();
+
+            imageWrap.appendChild(image);
+
+            if (title) {
+                const caption = document.createElement('div');
+                caption.style.padding = '10px 14px';
+                caption.style.textAlign = 'center';
+                caption.style.color = '#334155';
+                caption.style.fontWeight = '600';
+                caption.textContent = title;
+                imageWrap.appendChild(caption);
+            }
+
+            box.appendChild(topBar);
+            box.appendChild(imageWrap);
+            overlay.appendChild(box);
+            document.body.appendChild(overlay);
+
+            const escHandler = (e) => { if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', escHandler); } };
+            document.addEventListener('keydown', escHandler);
+        }
+
+        window.openImageGallery = function(items, startIndex = 0) {
+            const galleryItems = (items || []).filter(Boolean).map(item => {
+                if (typeof item === 'string') return { url: item, name: '' };
+                return item;
+            });
+
+            if (!galleryItems.length) return;
+
+            const existing = document.getElementById('imagePopupModal');
+            if (existing) existing.remove();
+
+            const overlay = document.createElement('div');
+            overlay.id = 'imagePopupModal';
+            overlay.style.position = 'fixed';
+            overlay.style.inset = '0';
+            overlay.style.background = 'rgba(2, 6, 23, 0.82)';
+            overlay.style.backdropFilter = 'blur(8px)';
+            overlay.style.display = 'flex';
+            overlay.style.alignItems = 'center';
+            overlay.style.justifyContent = 'center';
+            overlay.style.zIndex = '5000';
+            overlay.style.padding = '20px';
+            overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+
+            const box = document.createElement('div');
+            box.style.position = 'relative';
+            box.style.width = '100%';
+            box.style.maxWidth = '960px';
+            box.style.maxHeight = '90vh';
+            box.style.display = 'flex';
+            box.style.flexDirection = 'column';
+            box.style.gap = '10px';
+
+            const topBar = document.createElement('div');
+            topBar.style.display = 'flex';
+            topBar.style.alignItems = 'center';
+            topBar.style.justifyContent = 'space-between';
+            topBar.style.gap = '10px';
+            const counter = document.createElement('div');
+            counter.style.padding = '8px 12px';
+            counter.style.borderRadius = '999px';
+            counter.style.background = 'rgba(255,255,255,0.95)';
+            counter.style.color = '#334155';
+            counter.style.fontWeight = '700';
+            counter.style.fontSize = '0.9rem';
+            topBar.appendChild(counter);
+            const closeBtn = document.createElement('button');
+            closeBtn.type = 'button';
+            closeBtn.innerHTML = '✕';
+            closeBtn.style.border = 'none';
+            closeBtn.style.width = '40px';
+            closeBtn.style.height = '40px';
+            closeBtn.style.borderRadius = '50%';
+            closeBtn.style.background = 'white';
+            closeBtn.style.color = '#334155';
+            closeBtn.style.fontSize = '1.1rem';
+            closeBtn.style.cursor = 'pointer';
+            closeBtn.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)';
+            closeBtn.onclick = () => overlay.remove();
+            topBar.appendChild(closeBtn);
+
+            const imageWrap = document.createElement('div');
+            imageWrap.style.background = '#ffffff';
+            imageWrap.style.borderRadius = '20px';
+            imageWrap.style.overflow = 'hidden';
+            imageWrap.style.boxShadow = '0 20px 45px rgba(0,0,0,0.25)';
+            imageWrap.style.position = 'relative';
+
+            const loadingBox = document.createElement('div');
+            loadingBox.style.display = 'flex';
+            loadingBox.style.flexDirection = 'column';
+            loadingBox.style.alignItems = 'center';
+            loadingBox.style.justifyContent = 'center';
+            loadingBox.style.minHeight = '320px';
+            loadingBox.style.padding = '24px';
+            loadingBox.style.color = '#64748b';
+            loadingBox.innerHTML = `
+                <div style="width:44px; height:44px; border:4px solid rgba(96,176,255,0.25); border-top-color:#60b0ff; border-radius:50%; animation:spin 0.9s linear infinite;"></div>
+                <div style="margin-top:12px; font-weight:700;">กำลังโหลดภาพ...</div>
+            `;
+            imageWrap.appendChild(loadingBox);
+
+            const image = document.createElement('img');
+            image.alt = 'รูปภาพ';
+            image.style.display = 'none';
+            image.style.width = '100%';
+            image.style.maxHeight = '78vh';
+            image.style.objectFit = 'contain';
+            image.style.background = '#f8fafc';
+            imageWrap.appendChild(image);
+
+            const navBtnStyle = 'position:absolute; top:50%; transform:translateY(-50%); border:none; width:42px; height:42px; border-radius:50%; background:rgba(255,255,255,0.95); color:#334155; font-size:1.1rem; cursor:pointer; box-shadow:0 10px 25px rgba(0,0,0,0.15);';
+            const prevBtn = document.createElement('button');
+            prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+            prevBtn.style.cssText = navBtnStyle + 'left:12px;';
+            prevBtn.onclick = () => {
+                if (currentIndex > 0) {
+                    currentIndex -= 1;
+                    loadCurrentImage();
+                }
+            };
+            const nextBtn = document.createElement('button');
+            nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+            nextBtn.style.cssText = navBtnStyle + 'right:12px;';
+            nextBtn.onclick = () => {
+                if (currentIndex < galleryItems.length - 1) {
+                    currentIndex += 1;
+                    loadCurrentImage();
+                }
+            };
+            imageWrap.appendChild(prevBtn);
+            imageWrap.appendChild(nextBtn);
+
+            const caption = document.createElement('div');
+            caption.style.padding = '10px 14px';
+            caption.style.textAlign = 'center';
+            caption.style.color = '#334155';
+            caption.style.fontWeight = '600';
+            caption.textContent = '';
+            imageWrap.appendChild(caption);
+
+            let currentIndex = Math.max(0, Math.min(startIndex, galleryItems.length - 1));
+            const loadCurrentImage = () => {
+                const item = galleryItems[currentIndex];
+                if (!item) return;
+                const url = item.url || '';
+                const title = item.name || item.title || '';
+                caption.textContent = title || '';
+                counter.textContent = `${currentIndex + 1}/${galleryItems.length}`;
+                prevBtn.style.opacity = currentIndex === 0 ? '0.45' : '1';
+                prevBtn.style.pointerEvents = currentIndex === 0 ? 'none' : 'auto';
+                nextBtn.style.opacity = currentIndex === galleryItems.length - 1 ? '0.45' : '1';
+                nextBtn.style.pointerEvents = currentIndex === galleryItems.length - 1 ? 'none' : 'auto';
+
+                loadingBox.style.display = 'flex';
+                image.style.display = 'none';
+                const driveId = extractDriveId(url);
+                const candidateUrls = [];
+                if (url) candidateUrls.push(url);
+                if (driveId) {
+                    candidateUrls.push(`https://drive.google.com/thumbnail?id=${driveId}&sz=w1024`);
+                    candidateUrls.push(`https://drive.google.com/uc?export=view&id=${driveId}`);
+                    candidateUrls.push(`https://lh3.googleusercontent.com/d/${driveId}?authuser=0`);
+                    candidateUrls.push(`https://drive.google.com/file/d/${driveId}/view?usp=sharing`);
+                }
+
+                let currentTryIndex = 0;
+                const tryNextUrl = () => {
+                    if (currentTryIndex >= candidateUrls.length) {
+                        loadingBox.style.display = 'none';
+                        image.style.display = 'block';
+                        image.src = 'https://via.placeholder.com/800x500?text=No+Image';
+                        image.alt = 'ไม่สามารถโหลดภาพได้';
+                        return;
+                    }
+                    image.src = candidateUrls[currentTryIndex];
+                    currentTryIndex += 1;
+                };
+                image.onload = () => {
+                    loadingBox.style.display = 'none';
+                    image.style.display = 'block';
+                };
+                image.onerror = tryNextUrl;
+                tryNextUrl();
+            };
+
+            loadCurrentImage();
+
+            box.appendChild(topBar);
+            box.appendChild(imageWrap);
+            overlay.appendChild(box);
+            document.body.appendChild(overlay);
+
+            const escHandler = (e) => { if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', escHandler); } };
+            document.addEventListener('keydown', escHandler);
+        }
+
+        function getVisibleImageCount() {
+            const width = window.innerWidth || document.documentElement.clientWidth || screen.width;
+            if (width >= 1024) return 14;
+            if (width >= 768) return 6;
+            return 4;
+        }
+
+        let allAlbumsData = [];
+        let currentAlbumPage = 1;
+        const albumPageSize = 4;
+
+        window.renderAlbums = function(page) {
+            const totalPages = Math.max(1, Math.ceil(allAlbumsData.length / albumPageSize));
+            currentAlbumPage = Math.min(Math.max(1, Number(page) || 1), totalPages);
+            const albumWrapper = document.getElementById('albumWrapper'); 
+            if(!albumWrapper) return;
+            
+            albumWrapper.innerHTML = `
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:24px; padding:20px 24px; border-radius:24px; background:linear-gradient(135deg, rgba(96,176,255,0.14) 0%, rgba(133,114,255,0.16) 100%); border:1px solid rgba(96,176,255,0.18); box-shadow:0 12px 30px rgba(96,176,255,0.12);">
+                    <div>
+                        <h2 style="font-size: 1.6rem; margin:0 0 6px 0; color:var(--color-dark); font-weight:800; display:flex; align-items:center; gap:10px;">
+                            <i class="fas fa-folder-open" style="color:var(--c5-indigo);"></i> คลังโฟลเดอร์และเอกสารแยกประเภท
+                        </h2>
+                        <p style="margin:0; color:#64748b; font-size:0.95rem;">จัดหมวดหมู่ไฟล์ให้ดูโดดเด่นและเรียบง่ายขึ้น</p>
+                    </div>
+                    <div style="padding:8px 14px; border-radius:999px; background:rgba(255,255,255,0.75); color:var(--c4-blue); font-weight:700; box-shadow:0 6px 16px rgba(96,176,255,0.12);">✨ แยกตามประเภท</div>
+                </div>
+            `;
+
+            if(allAlbumsData.length === 0) {
+                albumWrapper.innerHTML += '<p style="text-align:center; color:#64748b; padding:20px;">ยังไม่มีข้อมูลโฟลเดอร์เอกสาร</p>';
+                return;
+            }
+
+            const startIndex = (currentAlbumPage - 1) * albumPageSize;
+            const endIndex = startIndex + albumPageSize;
+            const displayAlbums = allAlbumsData.slice(startIndex, endIndex);
+
+            displayAlbums.forEach(album => {
+                const section = document.createElement('div');
+                section.style.background = 'linear-gradient(135deg, #ffffff 0%, #f8fbff 100%)';
+                section.style.borderRadius = '24px';
+                section.style.padding = '25px';
+                section.style.marginBottom = '25px';
+                section.style.boxShadow = '0 20px 45px rgba(59, 130, 246, 0.12), 0 8px 20px rgba(15, 23, 42, 0.06)';
+                section.style.border = '2px solid rgba(59, 130, 246, 0.32)';
+                section.style.position = 'relative';
+                section.style.overflow = 'hidden';
+
+                const header = document.createElement('h3'); 
+                header.innerHTML = `<div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:20px; padding:10px 14px; border-radius:16px; background:linear-gradient(135deg, var(--c4-blue) 0%, var(--c5-indigo) 100%); color:white; box-shadow:0 10px 24px rgba(96,176,255,0.18);"><span style="display:flex; align-items:center; gap:8px; font-weight:700;"><i class="fas fa-folder" style="font-size:1rem;"></i> ${album.name || 'โฟลเดอร์ไม่มีชื่อ'}</span><span style="font-size:0.8rem; padding:4px 10px; border-radius:999px; background:rgba(255,255,255,0.2);">${(album.files || []).length} รายการ</span></div>`;
+                header.style.fontSize = '1.2rem'; 
+                header.style.marginBottom = '20px';
+                header.style.color = 'var(--color-dark)';
+                section.appendChild(header);
+
+                const files = album.files || [];
+                // ดึงค่า type จากฐานข้อมูลตรงๆ ก่อน ถ้าไม่มีค่อยใช้ระบบตรวจจับนามสกุลอัตโนมัติ
+                const images = files.filter(f => (f.type || detectType(f.url)) === 'image');
+                const pdfs = files.filter(f => (f.type || detectType(f.url)) === 'pdf');
+                const others = files.filter(f => !['image', 'pdf'].includes(f.type || detectType(f.url)));
+
+                // --- ดีไซน์ใหม่: แยกรูปแบบการแสดงผลรูปภาพ และ เอกสาร ---
+                const createSubGrid = (title, items, icon, colorClass, type) => {
+                    if(items.length === 0) return '';
+                    
+                    let html = `<div style="margin-bottom: 25px;">
+                                    <h4 style="font-size:0.95rem; margin-bottom:15px; color:#334155; font-weight:700; border-bottom:1px solid #e2e8f0; padding-bottom:8px; display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                                        <span style="display:flex; align-items:center; gap:8px;">
+                                            <i class="fas ${icon} ${colorClass}"></i> ${title}
+                                        </span>
+                                        <span style="font-size:0.75rem; padding:3px 10px; border-radius:999px; background:${type === 'pdf' ? 'rgba(255,110,145,0.14)' : type === 'image' ? 'rgba(174,98,227,0.14)' : 'rgba(96,176,255,0.14)'}; color:${type === 'pdf' ? 'var(--c7-pink)' : type === 'image' ? 'var(--c2-purple)' : 'var(--c4-blue)'}; font-weight:700;">${items.length} รายการ</span>
+                                    </h4>`;
+                                    
+                    // 1. รูปแบบสำหรับ "รูปภาพ" (แกลลอรีขนาดเล็ก)
+                    if (type === 'image') {
+                        const visibleCount = getVisibleImageCount();
+                        const visibleItems = items.slice(0, visibleCount);
+                        const hiddenCount = Math.max(items.length - visibleCount, 0);
+
+                        html += `<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(110px, 1fr)); gap:10px;">`;
+                        visibleItems.forEach((f, idx) => {
+                            const id = f.driveId || extractDriveId(f.url);
+                            const name = f.name || `รูปภาพที่ ${idx+1}`;
+                            const safeName = (name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                            const fullUrl = id ? fullImageUrlFromDriveId(id) : (f.url || '');
+                            if(id) {
+                                html += `<div style="border:1px solid rgba(133,114,255,0.18); border-radius:14px; overflow:hidden; cursor:zoom-in; position:relative; box-shadow:0 8px 20px rgba(133,114,255,0.08); background:linear-gradient(135deg,#fff 0%, #f9f5ff 100%);" onclick="window.openImagePopup('${fullUrl}', '${safeName}')" title="${name}">
+                                            <img src="${imgUrlFromDriveId(id)}" style="width:100%; height:90px; object-fit:cover; transition:transform 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" loading="lazy">
+                                            <div style="position:absolute; inset:0; background:linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.7) 100%); pointer-events:none;"></div>
+                                         </div>`;
+                            }
+                        });
+
+                        if (hiddenCount > 0) {
+                            const moreItems = items.slice(visibleCount);
+                            const morePayload = JSON.stringify(moreItems.map(item => ({
+                                url: item.url || '',
+                                name: item.name || '',
+                                driveId: item.driveId || extractDriveId(item.url) || ''
+                            })));
+                            html += `<div style="border:1px dashed rgba(133,114,255,0.35); border-radius:14px; min-height:90px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, rgba(96,176,255,0.12), rgba(133,114,255,0.14)); color:var(--c5-indigo); font-weight:800; font-size:0.95rem; cursor:pointer;" onclick='window.openImageGallery(${morePayload})'>+${hiddenCount}</div>`;
+                        }
+
+                        html += `</div>`;
+                    } 
+                    // 2. รูปแบบสำหรับ "เอกสาร PDF และอื่นๆ" (แถบแนวนอน List View)
+                    else {
+                        html += `<div style="display:flex; flex-direction:column; gap:10px;">`;
+                        items.forEach((f, idx) => {
+                            const id = f.driveId || extractDriveId(f.url);
+                            const name = f.name || (type === 'pdf' ? `เอกสาร PDF ชิ้นที่ ${idx+1}` : `ลิงก์แนบที่ ${idx+1}`);
+                            const previewUrl = type === 'pdf' && id ? pdfPreviewFromDriveId(id) : f.url;
+                            
+                            // กำหนดสีและไอคอนตามประเภท
+                            const iconClass = type === 'pdf' ? 'fa-file-pdf text-c7-pink' : 'fa-link text-c4-blue';
+                            const btnText = type === 'pdf' ? 'เปิดดูไฟล์' : 'ไปที่ลิงก์';
+                            const btnBg = type === 'pdf' ? 'var(--c7-pink)' : 'var(--c4-blue)';
+                            
+                            html += `<div style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:${type === 'pdf' ? 'linear-gradient(135deg, #fff7fb 0%, #ffeef4 100%)' : 'linear-gradient(135deg, #f8fcff 0%, #eef8ff 100%)'}; border:1px solid ${type === 'pdf' ? 'rgba(255,110,145,0.2)' : 'rgba(96,176,255,0.2)'}; border-left:4px solid ${btnBg}; border-radius:14px; transition:all 0.2s; box-shadow:0 6px 16px rgba(15,23,42,0.04);" onmouseover="this.style.borderColor='${btnBg}'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 22px rgba(15,23,42,0.08)'" onmouseout="this.style.borderColor='${type === 'pdf' ? 'rgba(255,110,145,0.2)' : 'rgba(96,176,255,0.2)'}'; this.style.transform='none'; this.style.boxShadow='0 6px 16px rgba(15,23,42,0.04)'">
+                                        <div style="display:flex; align-items:center; gap:12px; overflow:hidden;">
+                                            <div style="width:38px; height:38px; background:${type === 'pdf' ? 'linear-gradient(135deg, rgba(255,110,145,0.16), rgba(255,184,77,0.16))' : 'linear-gradient(135deg, rgba(96,176,255,0.16), rgba(133,114,255,0.16))'}; border-radius:10px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 5px rgba(0,0,0,0.05); flex-shrink:0;">
+                                                <i class="fas ${iconClass}" style="font-size:1.3rem;"></i>
+                                            </div>
+                                            <div class="truncate-2" style="font-size:0.9rem; font-weight:700; color:#334155;" title="${name}">${name}</div>
+                                        </div>
+                                        <a href="${previewUrl}" target="_blank" style="flex-shrink:0; margin-left:10px; font-size:0.75rem; background:${btnBg}; color:white; border:1px solid ${btnBg}; padding:6px 14px; border-radius:999px; text-decoration:none; font-weight:700; transition:all 0.2s; box-shadow:0 8px 18px rgba(15,23,42,0.08);" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 10px 22px rgba(15,23,42,0.12)'" onmouseout="this.style.transform='none'; this.style.boxShadow='0 8px 18px rgba(15,23,42,0.08)'">${btnText}</a>
+                                     </div>`;
+                        });
+                        html += `</div>`;
+                    }
+                    
+                    html += `</div>`;
+                    return html;
+                };
+
+                let contentHtml = '';
+                contentHtml += createSubGrid('เอกสารดาวน์โหลด PDF', pdfs, 'fa-file-pdf', 'text-c7-pink', 'pdf');
+                contentHtml += createSubGrid('สื่อรูปภาพ / กิจกรรม', images, 'fa-image', 'text-c2-purple', 'image');
+                contentHtml += createSubGrid('ลิงก์และไฟล์อื่นๆ', others, 'fa-paperclip', 'text-c-other', 'other');
+
+                section.innerHTML += contentHtml;
+                albumWrapper.appendChild(section);
+            });
+
+            if (totalPages > 1) {
+                const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+                const pageButtons = pageNumbers.map(page => {
+                    const active = page === currentAlbumPage;
+                    return `<button onclick="renderAlbums(${page})" style="border:none; border-radius:999px; padding:8px 12px; cursor:pointer; font-weight:700; ${active ? 'background:linear-gradient(135deg, var(--c4-blue), var(--c5-indigo)); color:white;' : 'background:#f8fafc; color:#334155;'}">${page}</button>`;
+                }).join('');
+
+                albumWrapper.innerHTML += `
+                <div style="display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:10px; margin-top: 35px; margin-bottom: 20px;">
+                    <button onclick="renderAlbums(${Math.max(1, currentAlbumPage - 1)})" style="border:none; border-radius:999px; padding:8px 12px; cursor:pointer; font-weight:700; background:#f8fafc; color:#334155; ${currentAlbumPage === 1 ? 'opacity:0.5; cursor:not-allowed;' : ''}"><i class="fas fa-chevron-left"></i></button>
+                    ${pageButtons}
+                    <button onclick="renderAlbums(${Math.min(totalPages, currentAlbumPage + 1)})" style="border:none; border-radius:999px; padding:8px 12px; cursor:pointer; font-weight:700; background:#f8fafc; color:#334155; ${currentAlbumPage === totalPages ? 'opacity:0.5; cursor:not-allowed;' : ''}"><i class="fas fa-chevron-right"></i></button>
+                </div>`;
+            }
+        };
+
+        window.addEventListener('resize', () => {
+            if (window.renderAlbums) {
+                window.renderAlbums(currentAlbumPage);
+            }
+        });
+
+        // แสดงส่วนของ ด้านการปฏิบัติงาน ในรูปแบบอัลบั้ม (ผสมรูปและไฟล์)
+        window.renderWorkSection = function(albums) {
+            const container = document.getElementById('workTableContainer');
+            if(!container) return;
+            container.innerHTML = '';
+
+            if(!albums || !albums.length) {
+                container.innerHTML = '<div style="padding:20px; color:#64748b;">ยังไม่มีรายการงาน</div>';
+                return;
+            }
+
+            // แสดงสูงสุด 3 บล็อค (ตามคำขอผู้ใช้งาน)
+            const blocks = albums.slice(0, 3);
+            blocks.forEach(album => {
+                const section = document.createElement('div');
+                section.classList.add('work-category-card');
+                section.style.display = 'flex';
+                section.style.flexDirection = 'column';
+                section.style.gap = '12px';
+                section.style.padding = '18px';
+                section.style.borderRadius = '14px';
+                section.style.background = 'linear-gradient(180deg,#ffffff,#fbfdff)';
+                section.style.border = '1px solid rgba(2,6,23,0.04)';
+                section.style.boxShadow = '0 6px 18px rgba(12,18,35,0.04)';
+
+                const header = document.createElement('div');
+                header.style.display = 'flex';
+                header.style.justifyContent = 'space-between';
+                header.style.alignItems = 'center';
+                header.innerHTML = `<div style="display:flex; align-items:center; gap:10px;"><i class="fas fa-folder" style="color:var(--c5-indigo);"></i><strong style="font-size:1rem;">${album.name || 'โฟลเดอร์'}</strong></div><span style="font-size:0.85rem; color:#64748b;">${(album.files||[]).length} รายการ</span>`;
+                section.appendChild(header);
+
+                const items = album.files || [];
+                // ผสมรูปและไฟล์อื่นๆ ในกริดเดียวกัน (thumbnail tiles)
+                const grid = document.createElement('div');
+                grid.style.display = 'grid';
+                grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(120px, 1fr))';
+                grid.style.gap = '10px';
+
+                const visibleCount = Math.min(items.length, 9);
+                const visibleItems = items.slice(0, visibleCount);
+                const hiddenCount = Math.max(0, items.length - visibleCount);
+
+                visibleItems.forEach((f, idx) => {
+                    const type = (f.type || detectType(f.url));
+                    const id = f.driveId || extractDriveId(f.url);
+                    const name = f.name || (`ไฟล์ ${idx+1}`);
+
+                    const tile = document.createElement('div');
+                    tile.classList.add('work-item-card');
+                    tile.style.border = '1px solid rgba(15,23,42,0.03)';
+                    tile.style.borderRadius = '12px';
+                    tile.style.overflow = 'hidden';
+                    tile.style.background = '#fff';
+                    tile.style.display = 'flex';
+                    tile.style.flexDirection = 'column';
+                    tile.style.cursor = 'default';
+
+                    if (type === 'image' && id) {
+                        const imgWrap = document.createElement('div');
+                        imgWrap.style.height = '88px';
+                        imgWrap.style.overflow = 'hidden';
+                        imgWrap.style.display = 'flex';
+                        imgWrap.style.alignItems = 'center';
+                        imgWrap.style.justifyContent = 'center';
+                        imgWrap.style.background = '#f8fafc';
+                        imgWrap.style.cursor = 'zoom-in';
+                        const img = document.createElement('img');
+                        img.src = imgUrlFromDriveId(id);
+                        img.alt = name;
+                        img.style.width = '100%';
+                        img.style.height = '100%';
+                        img.style.objectFit = 'cover';
+                        img.loading = 'lazy';
+                        imgWrap.onclick = () => window.openImagePopup(fullImageUrlFromDriveId(id), name);
+                        imgWrap.appendChild(img);
+                        tile.appendChild(imgWrap);
+                    } else if (type === 'image' && f.url) {
+                        const imgWrap = document.createElement('div');
+                        imgWrap.style.height = '88px';
+                        imgWrap.style.overflow = 'hidden';
+                        imgWrap.style.display = 'flex';
+                        imgWrap.style.alignItems = 'center';
+                        imgWrap.style.justifyContent = 'center';
+                        imgWrap.style.background = '#f8fafc';
+                        imgWrap.style.cursor = 'zoom-in';
+                        const img = document.createElement('img');
+                        img.src = f.url;
+                        img.alt = name;
+                        img.style.width = '100%';
+                        img.style.height = '100%';
+                        img.style.objectFit = 'cover';
+                        img.loading = 'lazy';
+                        imgWrap.onclick = () => window.openImagePopup(f.url, name);
+                        imgWrap.appendChild(img);
+                        tile.appendChild(imgWrap);
+                    } else {
+                        // non-image tile: show icon and filename
+                        const iconRow = document.createElement('div');
+                        iconRow.style.height = '88px';
+                        iconRow.style.display = 'flex';
+                        iconRow.style.alignItems = 'center';
+                        iconRow.style.justifyContent = 'center';
+                        iconRow.style.background = 'linear-gradient(135deg, rgba(248,250,252,1), rgba(241,245,249,1))';
+                        const inner = document.createElement('div');
+                        inner.style.display = 'flex';
+                        inner.style.flexDirection = 'column';
+                        inner.style.alignItems = 'center';
+                        inner.style.gap = '8px';
+                        const extIcon = document.createElement('div');
+                        extIcon.innerHTML = `<i class="fas ${type==='pdf' ? 'fa-file-pdf' : 'fa-file-alt'}" style="font-size:1.4rem; color:var(--c4-blue);"></i>`;
+                        const short = document.createElement('div');
+                        short.classList.add('truncate-2');
+                        short.style.fontSize = '0.85rem';
+                        short.style.fontWeight = '700';
+                        short.style.color = '#334155';
+                        short.style.maxWidth = '100%';
+                        short.style.textAlign = 'center';
+                        short.style.padding = '0 8px';
+                        short.title = name;
+                        short.textContent = name;
+                        inner.appendChild(extIcon);
+                        inner.appendChild(short);
+                        iconRow.appendChild(inner);
+                        tile.appendChild(iconRow);
+
+                        // action row
+                        const actionBar = document.createElement('div');
+                        actionBar.style.display = 'flex';
+                        actionBar.style.justifyContent = 'center';
+                        actionBar.style.alignItems = 'center';
+                        actionBar.style.padding = '8px';
+                        const href = (id && type==='pdf') ? pdfPreviewFromDriveId(id) : (f.url || '#');
+                        const btn = document.createElement('a');
+                        btn.href = href;
+                        btn.target = '_blank';
+                        btn.style.fontSize = '0.8rem';
+                        btn.style.fontWeight = '700';
+                        btn.style.padding = '6px 10px';
+                        btn.style.borderRadius = '999px';
+                        btn.style.background = 'var(--c4-blue)';
+                        btn.style.color = '#fff';
+                        btn.style.textDecoration = 'none';
+                        btn.textContent = (type==='pdf') ? 'เปิด' : 'ดู';
+                        actionBar.appendChild(btn);
+                        tile.appendChild(actionBar);
+                    }
+
+                    grid.appendChild(tile);
+                });
+
+                if (hiddenCount > 0) {
+                    const moreTile = document.createElement('div');
+                    moreTile.style.display = 'flex';
+                    moreTile.style.alignItems = 'center';
+                    moreTile.style.justifyContent = 'center';
+                    moreTile.style.border = '1px dashed rgba(15,23,42,0.04)';
+                    moreTile.style.borderRadius = '12px';
+                    moreTile.style.background = '#fbfcff';
+                    moreTile.style.fontWeight = '800';
+                    moreTile.style.color = 'var(--c5-indigo)';
+                    moreTile.style.cursor = 'pointer';
+                    moreTile.textContent = `+${hiddenCount}`;
+                    moreTile.onclick = () => {
+                        const payload = JSON.stringify(items.map(item => ({ url: item.url||'', name: item.name||'', driveId: item.driveId||extractDriveId(item.url)||'' })));
+                        window.openImageGallery(items.map(it => ({ url: it.url || (it.driveId? fullImageUrlFromDriveId(it.driveId):''), name: it.name||'' })), 0);
+                    };
+                    grid.appendChild(moreTile);
+                }
+
+                section.appendChild(grid);
+                container.appendChild(section);
+            });
+        };
+
+        // ดึงข้อมูลแบบ Realtime และจัดเรียงตามลำดับเลข order จากน้อยไปมาก 🚀
+        db.collection('albums').onSnapshot(snap => {
+            allAlbumsData = [];
+            snap.forEach(doc => {
+                allAlbumsData.push(doc.data());
+            });
+            
+            // จัดเรียงอาร์เรย์ตามฟิลด์ order
+            allAlbumsData.sort((a, b) => (a.order || 99) - (b.order || 99));
+            
+            renderAlbums(1);
+        });
+    });
+    </script>
+
 </body>
 </html>

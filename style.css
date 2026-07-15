@@ -29,9 +29,35 @@ html, body { -ms-overflow-style: none; scrollbar-width: none; background-color: 
     background: rgba(255, 255, 255, 0.95); box-shadow: 0 4px 20px rgba(0,0,0,0.05);
     position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
 }
-.header-logo { display: flex; align-items: center; gap: 10px; }
-.logo-icon { width: 40px; height: 40px; }
-.logo-text { font-weight: 800; font-size: 1.1rem; line-height: 1.1; color: var(--c5-indigo); }
+.header-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    background: rgba(96, 176, 255, 0.08);
+    border: 1px solid rgba(96, 176, 255, 0.2);
+    box-shadow: 0 18px 42px rgba(96, 176, 255, 0.08);
+}
+
+.logo-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(96, 176, 255, 0.28), rgba(133, 114, 255, 0.25));
+    padding: 10px;
+    box-shadow: 0 18px 30px rgba(96, 176, 255, 0.16);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: block;
+}
+
+.logo-icon:hover {
+    transform: translateY(-1px) scale(1.05);
+}
+
+.logo-text {
+    display: none;
+}
 
 .header-center-nav { display: flex; align-items: center; gap: 15px; }
 .nav-menu { display: flex; gap: 5px; }
@@ -52,16 +78,27 @@ html, body { -ms-overflow-style: none; scrollbar-width: none; background-color: 
 #mobile-menu-btn { display: none; }
 
 .btn-signin {
-    background: rgba(255, 139, 96, 0.15); color: var(--c6-orange);
-    padding: 10px 25px; border-radius: 25px; text-decoration: none; font-weight: 800; font-size: 0.9rem;
-    border: 1px solid rgba(255, 139, 96, 0.3); backdrop-filter: blur(5px);
-    box-shadow: 0 5px 15px rgba(255, 139, 96, 0.1), inset 0 0 10px rgba(255, 184, 77, 0.1);
-    transition: all 0.3s ease;
+    /* เปลี่ยนจากสีส้มเป็นสีฟ้าพาสเทลนุ่มๆ */
+    background: rgba(96, 176, 255, 0.15); 
+    color: var(--c4-blue);
+    padding: 10px 25px; 
+    border-radius: 25px; 
+    text-decoration: none; 
+    font-weight: 800; 
+    font-size: 0.9rem;
+    border: 1px solid rgba(96, 176, 255, 0.3); 
+    backdrop-filter: blur(5px);
+    box-shadow: 0 5px 15px rgba(96, 176, 255, 0.1), inset 0 0 10px rgba(255, 255, 255, 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 .btn-signin:hover { 
     transform: translateY(-2px) scale(1.05); 
-    background: linear-gradient(135deg, #ff9a44 0%, #fc6076 100%);
-    color: white; border-color: transparent; box-shadow: 0 10px 25px rgba(252, 96, 118, 0.6); 
+    /* เอฟเฟกต์ Hover เปลี่ยนเป็นสีฟ้าสว่าง สบายตา */
+    background: linear-gradient(135deg, #60b0ff 0%, #8572ff 100%);
+    color: white; 
+    border-color: transparent; 
+    box-shadow: 0 10px 25px rgba(96, 176, 255, 0.5); 
 }
 
 /* =========================================
@@ -93,19 +130,51 @@ html, body { -ms-overflow-style: none; scrollbar-width: none; background-color: 
 .char-center { width: 220px; z-index: 11; filter: drop-shadow(0 20px 20px rgba(133, 114, 255, 0.25)); }
 
 /* =========================================
-   3. Toolbar Divider
+   Updated Toolbar Divider (Sleek Glassmorphic & Soothing Tone)
    ========================================= */
-.toolbar-divider { position: relative; height: 80px; background: white; display: flex; justify-content: center; align-items: center; }
-.toolbar-line { position: absolute; width: 100%; height: 5px; background: linear-gradient(to right, var(--c7-pink) 0%, var(--c2-purple) 50%, var(--c4-blue) 100%); opacity: 0.5; }
-.toolbar-icons { display: flex; gap: 40px; z-index: 5; }
-.t-icon { width: 55px; height: 55px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.3rem; border: 4px solid white; transition: transform 0.3s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-.t-icon:nth-child(1) { background: var(--c3-yellow); }
-.t-icon:nth-child(2) { background: var(--c10-green); }
-.t-icon:nth-child(3) { background: var(--c4-blue); }
-.t-icon:nth-child(4) { background: var(--c9-cyan); }
-.t-icon:nth-child(5) { background: var(--c6-orange); }
-.t-icon:hover { transform: translateY(-8px) scale(1.1); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+.toolbar-divider {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 30px 0;
+    background: #ffffff; /* กลืนไปกับ Section ด้านล่าง */
+    margin-top: -40px; /* ขยับขึ้นไปเกยกับ Hero Banner เล็กน้อยให้ดูมีมิติ */
+    z-index: 20;
+}
 
+.toolbar-capsule {
+    display: flex;
+    gap: 25px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    padding: 12px 35px;
+    border-radius: 40px;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: 0 15px 35px rgba(96, 176, 255, 0.1); /* ใช้เงาสีฟ้าจางๆ แทนเส้นสีเข้ม */
+}
+
+.t-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.15rem;
+    background: #f4f7fe; /* สีพื้นหลังไอคอนเริ่มต้นแบบนุ่มนวล */
+    color: #64748b; /* สีไอคอนเริ่มต้น */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+/* Hover Effect: แสดงสีสันพาสเทลเฉพาะตอนเมาส์ชี้ เพื่อความสบายตา */
+.t-icon:nth-child(1):hover { background: rgba(255, 184, 77, 0.15); color: var(--c3-yellow); transform: translateY(-4px); }
+.t-icon:nth-child(2):hover { background: rgba(133, 114, 255, 0.15); color: var(--c5-indigo); transform: translateY(-4px); }
+.t-icon:nth-child(3):hover { background: rgba(96, 176, 255, 0.15); color: var(--c4-blue); transform: translateY(-4px); }
+.t-icon:nth-child(4):hover { background: rgba(63, 212, 229, 0.15); color: var(--c9-cyan); transform: translateY(-4px); }
+.t-icon:nth-child(5):hover { background: rgba(255, 110, 145, 0.15); color: var(--c7-pink); transform: translateY(-4px); }
 /* =========================================
    4. Profile Section 
    ========================================= */
@@ -177,13 +246,32 @@ html, body { -ms-overflow-style: none; scrollbar-width: none; background-color: 
 
 .portfolio-card {
     background: var(--card-bg); border-radius: 20px; padding: 0; position: relative;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); border: 1px solid #fff; overflow: hidden; transition: all 0.3s ease; display: flex; flex-direction: column; height: 100%;
+    box-shadow: 0 16px 38px rgba(15, 23, 42, 0.12), 0 6px 20px rgba(96, 176, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.9); overflow: hidden; transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    display: flex; flex-direction: column; height: 100%;
 }
-.portfolio-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); border-color: var(--c4-blue); }
+.portfolio-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(96, 176, 255, 0.22), rgba(133, 114, 255, 0.16));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    -webkit-mask-composite: destination-out;
+    pointer-events: none;
+    z-index: 1;
+}
+.portfolio-card:hover { transform: translateY(-8px); box-shadow: 0 24px 55px rgba(15, 23, 42, 0.16), 0 8px 28px rgba(96, 176, 255, 0.12); border-color: rgba(96, 176, 255, 0.35); }
 .card-accent-bar { height: 5px; width: 100%; } 
 .card-img-bg { height: 190px; position: relative; overflow: hidden; background: #f8fafc; display: block; }
 .card-img-bg img { width: 100%; height: 100%; object-fit: cover; object-position: center; transition: transform 0.4s ease; }
 .portfolio-card:hover .card-img-bg img { transform: scale(1.05); }
+/* Indicate images are clickable and enhance hover for popup preview */
+.card-img-bg img, .detail-img-col img, .work-item-thumb img { cursor: zoom-in; transition: transform 0.25s ease; }
+.card-img-bg img:hover, .detail-img-col img:hover, .work-item-thumb img:hover { transform: scale(1.02); }
 .card-info { padding: 20px; text-align: left; display: flex; flex-direction: column; flex-grow: 1; }
 .card-info h3 { font-size: 1.25rem; margin-bottom: 8px; font-weight: 800; line-height: 1.3; } 
 .card-info p { font-size: 0.95rem; color: var(--color-gray); margin-bottom: 20px; line-height: 1.5; flex-grow: 1; }
@@ -201,6 +289,214 @@ html, body { -ms-overflow-style: none; scrollbar-width: none; background-color: 
     background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%) !important;
     color: white !important; border-color: transparent !important;
     box-shadow: 0 10px 30px rgba(0, 114, 255, 0.6) !important;
+}
+
+/* =========================================
+   5.5 Work Section (ด้านการปฏิบัติงาน)
+   ========================================= */
+.work-section { padding: 84px 5% 48px; position: relative; background: linear-gradient(135deg, #f2f9ff 0%, #f8fbff 45%, #ffffff 100%); }
+.work-section::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at top left, rgba(96,176,255,0.18), transparent 34%), radial-gradient(circle at bottom right, rgba(111,116,255,0.16), transparent 28%); pointer-events: none; }
+.work-section-header { max-width: 1120px; margin: 0 auto 34px; position: relative; z-index: 1; }
+.work-header-card { display: grid; grid-template-columns: auto 1fr; gap: 20px; padding: 28px 30px; background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(235,244,255,0.95) 100%); border: 1px solid rgba(96,146,255,0.22); border-radius: 28px; box-shadow: 0 18px 40px rgba(15,23,42,0.08); position: relative; overflow: hidden; }
+.work-header-card::before { content: ''; position: absolute; width: 220px; height: 220px; border-radius: 50%; top: -60px; right: -70px; background: radial-gradient(circle, rgba(96,176,255,0.24), transparent 64%); pointer-events: none; }
+.work-header-icon { width: 62px; height: 62px; flex: 0 0 62px; display: grid; place-items: center; border-radius: 18px; background: linear-gradient(135deg, #60b0ff, #6f74ff); color: white; font-size: 1.45rem; box-shadow: 0 16px 30px rgba(96,176,255,0.24); }
+.work-section-header .work-badge { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 999px; background: rgba(96,176,255,0.12); color: #1e3a8a; font-weight: 800; font-size: 0.87rem; margin-bottom: 14px; border: 1px solid rgba(96,176,255,0.22); letter-spacing: .02em; }
+.work-section-header h2 { font-size: clamp(2rem, 2.6vw, 2.6rem); font-weight: 900; color: #101828; margin: 0 0 12px; line-height: 1.15; letter-spacing: -0.02em; }
+.work-section-header p { color: #475569; margin: 0; font-size: 1rem; line-height: 1.75; max-width: 760px; }
+
+/* Work header text block: visually separate title and short description */
+.work-header-text { display: flex; flex-direction: column; gap: 10px; }
+.work-header-text h2 { position: relative; padding-left: 20px; }
+.work-header-text h2::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 10px; height: 72%; border-radius: 6px; background: linear-gradient(180deg, #37aaf7, #6f74ff); box-shadow: 0 8px 24px rgba(96,176,255,0.18); transition: all 0.25s ease; }
+/* Default: subtext displayed as a clear divider (prominent) */
+.work-subtext { display: block; color: #334155; margin: 0; padding-top: 12px; border-top: 3px solid rgba(96,176,255,0.18); max-width: 760px; font-size: 0.98rem; }
+/* Alternative: glassy boxed subtext */
+.work-subtext--glass { display: inline-block; background: rgba(255,255,255,0.7); padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(96,176,255,0.08); color: #475569; box-shadow: 0 6px 18px rgba(96,176,255,0.04); }
+.work-table-container { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; position: relative; z-index: 1; }
+    .work-category-card { background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(245,250,255,0.85)); border-radius: 20px; padding: 22px; box-shadow: 0 18px 40px rgba(15,23,42,0.06); border: 1px solid rgba(255,255,255,0.6); position: relative; overflow: hidden; backdrop-filter: blur(6px); }
+    .work-category-card::before { content: ''; position: absolute; inset: 0; border: 1px solid rgba(255,255,255,0.7); border-radius: inherit; pointer-events: none; }
+.work-category-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
+.work-category-top h3 { font-size: 1.12rem; font-weight: 800; color: var(--color-dark); margin: 0; }
+.work-category-top p { margin: 4px 0 0; color: var(--color-gray); font-size: 0.9rem; }
+.work-category-desc { margin: 6px 0 0; color: #516171; font-size: 0.92rem; max-width: 600px; background: rgba(255,255,255,0.6); padding: 8px 12px; border-radius: 10px; border: 1px solid rgba(96,176,255,0.06); box-shadow: 0 6px 14px rgba(96,176,255,0.04); display: inline-block; }
+.work-pill { padding: 6px 12px; border-radius: 999px; background: rgba(248,250,252,0.95); color: #4c5a6e; font-weight: 700; font-size: 0.8rem; border: 1px solid rgba(148,163,184,0.2); }
+.work-table { width: 100%; border-collapse: collapse; overflow: hidden; }
+.work-table thead th { text-align: left; padding: 12px 14px; color: #475569; font-size: 0.8rem; font-weight: 800; background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
+.work-table tbody td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; font-size: 0.92rem; color: #334155; }
+.work-table tbody tr:hover { background: #f8fbff; }
+.work-link-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 999px; background: #f8fbff; color: #2563eb; text-decoration: none; font-weight: 700; font-size: 0.82rem; border: 1px solid rgba(96,176,255,0.22); box-shadow: 0 4px 10px rgba(15,23,42,0.04); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.work-link-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 14px rgba(15,23,42,0.06); }
+.work-empty { padding: 28px; text-align: center; color: var(--color-gray); background: white; border-radius: 20px; border: 1px dashed #cbd5e1; box-shadow: 0 12px 30px rgba(15,23,42,0.04); }
+
+/* 1. ปรับ Grid ให้บีบการ์ดเล็กลงเป็น 140px และลดช่องไฟระหว่างการ์ดให้แคบลง */
+.work-items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); /* ปรับเหลือ 140px */
+    gap: 10px; /* ลดช่องว่างความห่างระหว่างการ์ดลง */
+    margin-top: 14px;
+}
+
+/* 2. ปรับกรอบ (Card) ลดความหนาของเงา และลดความโค้งมนจาก 22px ลงมาให้รับกับขนาดเล็ก */
+.work-item-card {
+    background: linear-gradient(180deg, rgba(255,255,255,0.72), rgba(250,254,255,0.72));
+    border-radius: 12px;
+    border: 1px solid rgba(96,176,255,0.12);
+    box-shadow: 0 10px 30px rgba(96,176,255,0.06);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    max-width: 220px;
+}
+.work-item-card:hover { transform: translateY(-6px); box-shadow: 0 22px 48px rgba(96,176,255,0.12); }
+
+/* 3. ล็อคความสูงพื้นที่รูปภาพ/ไอคอน (Thumbnail) ให้เตี้ยลงมาเหลือแค่ 85px */
+.work-item-thumb {
+    height: 85px; /* ล็อคความสูงคงที่ */
+    min-height: 85px;
+    max-height: 85px;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 4. ลดขนาดขนาด Icon ไฟล์ลงให้เล็กลงและสมส่วนกับพื้นที่ 85px */
+.work-item-thumb i {
+    font-size: 1.6rem; /* ลดขนาดไอคอนลงจาก 2.5rem */
+    color: rgba(96, 176, 255, 0.8);
+}
+
+/* 5. ลดระยะขอบช่องไฟ (Padding) ด้านในตัวการ์ดทั้งหมดลง */
+.work-item-card-body {
+    padding: 10px; /* ลดพื้นที่ว่างรอบๆ ข้อความลง */
+    display: flex;
+    flex-direction: column;
+    gap: 6px; /* ลดช่องว่างระหว่างข้อความกับปุ่มให้ชิดกันกระชับ */
+    flex: 1;
+}
+
+/* 6. ลดขนาดตัวหนังสือชื่อประเภทและชื่อไฟล์ลง */
+.work-item-type {
+    font-size: 0.72rem; /* ขนาดประเภทไฟล์เล็กๆ */
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--c4-blue);
+    font-weight: 800;
+    margin-bottom: 2px;
+}
+
+.work-item-title {
+    font-size: 0.85rem; /* ลดขนาดตัวหนังสือชื่อไฟล์ลงให้พอดีสายตา */
+    font-weight: 700;
+    color: var(--color-dark);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: auto; /* ลบช่องว่างส่วนเกินออก */
+    margin-bottom: 2px;
+}
+
+/* 7. ปรับขนาดปุ่ม "เปิดไฟล์" ให้เล็กลงและดูเป็นระเบียบ */
+.work-item-link {
+    margin-top: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px 10px; /* ปรับปุ่มให้แคบลงกะทัดรัด */
+    background: rgba(96, 176, 255, 0.1);
+    color: var(--c4-blue);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.78rem; /* ลดขนาดฟอนต์ของปุ่ม */
+    border-radius: 8px; /* ลดความโค้งมนของปุ่ม */
+    border: 1px solid rgba(96, 176, 255, 0.2);
+    transition: all 0.2s ease;
+}
+
+/* ================================
+   Responsive image utilities
+   ปรับขนาดรูปให้เป็นมาตรฐานและตอบสนองหน้าจอ
+   ================================ */
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* คลาสมาตรฐานสำหรับรูปที่ต้องการขนาดเดียวกัน (thumbnail / card) */
+.img-standard {
+    width: 100%;
+    max-height: 280px;
+    height: auto;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+}
+
+/* จำกัดความสูงของ thumbnail ใน Work Section ให้อยู่ในขนาดมาตรฐาน */
+.work-item-thumb {
+    min-height: 140px;
+    max-height: 220px;
+}
+.work-item-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* บริเวณอื่นที่เป็นภาพขนาดใหญ่ ให้จำกัดความสูงเพื่อความสวยงาม */
+.prof-img-bg img, .card-img-bg img {
+    width: 100%;
+    height: auto;
+    max-height: 420px;
+    object-fit: cover;
+}
+
+/* Compact / simplified view to reduce visual clutter */
+.compact-view .floating-icon,
+.compact-view .glow-orb,
+.compact-view .nav-arrow,
+.compact-view .hero-characters { display: none !important; }
+
+.compact-view .hero-section { height: auto; min-height: 320px; padding: 30px 5%; }
+.compact-view .hero-content { padding: 26px 30px; border-radius: 18px; width: 90%; }
+.compact-view .soothing-text { font-size: clamp(1.6rem, 3.2vw, 2.4rem); }
+
+.compact-view .toolbar-capsule { padding: 8px 18px; gap: 12px; }
+.compact-view .t-icon { width: 40px; height: 40px; font-size: 0.95rem; }
+
+.compact-view .profile-card { padding: 24px; border-radius: 18px; gap: 20px; }
+.compact-view .profile-container { max-width: 900px; }
+
+.compact-view .portfolio-banner-premium { padding: 36px 5%; }
+.compact-view .banner-content-glass { padding: 20px; border-radius: 16px; }
+
+.compact-view .cards-container { gap: 12px; padding: 30px 4% 60px; }
+.compact-view .portfolio-card { border-radius: 12px; }
+.compact-view .card-img-bg { height: 140px; }
+
+.compact-view .work-section { padding: 36px 4% 24px; }
+.compact-view .work-header-card { padding: 12px 14px; border-radius: 14px; }
+.compact-view .work-item-card { border-radius: 12px; }
+
+/* Hide decorative mascots in footer for compact view */
+.compact-view .footer-mascot { display: none; }
+
+/* Small-screen tweaks for compact view */
+@media (max-width: 768px) {
+    .compact-view .cards-container { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+}
+
+@media (max-width: 768px) {
+    .work-header-card { padding: 20px; }
+    .work-header-icon { width: 48px; height: 48px; flex-basis: 48px; font-size: 1.2rem; }
+    .work-category-top { flex-direction: column; align-items: flex-start; }
 }
 
 /* =========================================
@@ -248,10 +544,24 @@ html, body { -ms-overflow-style: none; scrollbar-width: none; background-color: 
 .files-grid-public { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto; padding: 0 5%; }
 
 .file-card-public {
-    background: #ffffff; border-radius: 16px; padding: 30px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; text-align: center; transition: all 0.4s ease; cursor: pointer; text-decoration: none; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0,0,0,0.03); position: relative; overflow: hidden; 
+    background: #ffffff; border-radius: 16px; padding: 30px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; text-align: center; transition: transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease; cursor: pointer; text-decoration: none; border: 1px solid rgba(226, 232, 240, 0.9); box-shadow: 0 16px 38px rgba(15, 23, 42, 0.08), 0 6px 20px rgba(96, 176, 255, 0.08); position: relative; overflow: hidden; 
 }
-.file-card-public:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); border-color: var(--c4-blue); }
 .file-card-public::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: #e2e8f0; transition: background 0.3s ease; }
+.file-card-public::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(96, 176, 255, 0.22), rgba(63, 212, 229, 0.16));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    -webkit-mask-composite: destination-out;
+    pointer-events: none;
+    z-index: 1;
+}
+.file-card-public:hover { transform: translateY(-8px); box-shadow: 0 24px 55px rgba(15, 23, 42, 0.13), 0 8px 28px rgba(96, 176, 255, 0.14); border-color: rgba(96, 176, 255, 0.35); }
 .file-pdf::before { background: var(--c7-pink); }
 .file-doc::before { background: var(--c4-blue); }
 .file-img::before { background: var(--c2-purple); }
@@ -261,7 +571,7 @@ html, body { -ms-overflow-style: none; scrollbar-width: none; background-color: 
 .file-card-icon { font-size: 3.5rem; margin-bottom: 5px; transition: transform 0.3s ease; }
 .file-card-public:hover .file-card-icon { transform: scale(1.1); }
 .file-card-info { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-.file-card-name { font-weight: 800; font-size: 0.95rem; color: var(--color-dark); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; }
+.file-card-name { font-weight: 800; font-size: 0.95rem; color: var(--color-dark); display: -webkit-box; line-clamp: 2; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; }
 .file-card-cat { padding: 4px 15px; border-radius: 15px; font-size: 0.75rem; font-weight: 700; background: #f1f5f9; color: var(--color-gray); }
 
 .icon-download-btn { 
@@ -346,10 +656,10 @@ html, body { -ms-overflow-style: none; scrollbar-width: none; background-color: 
 .modal-overlay.open { display: flex; }
 
 .modal-detail-box {
-    background: #ffffff; padding: 0 !important; max-width: 750px !important; 
+    background: #ffffff; padding: 0 !important; width: min(98vw, 1200px) !important;
     overflow-y: auto !important; overflow-x: hidden !important;
     border-radius: 28px !important; box-shadow: 0 25px 50px rgba(0,0,0,0.15) !important;
-    border: none !important; max-height: 92vh; position: relative;
+    border: none !important; max-height: 96vh; position: relative;
     animation: modalIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 .modal-detail-box::-webkit-scrollbar { width: 6px; }
@@ -368,8 +678,15 @@ html, body { -ms-overflow-style: none; scrollbar-width: none; background-color: 
 
 .detail-layout { display: flex; flex-direction: column; min-height: auto; }
 .detail-img-col { width: 100%; background: #f8fafc; position: relative; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #f1f5f9; }
-.detail-img-col img { width: 100%; height: auto; max-height: 55vh; object-fit: contain; display: block; }
+.detail-img-col img { width: 100%; height: auto; max-height: 65vh; object-fit: cover; display: block; }
 .detail-content-col { padding: 40px; display: flex; flex-direction: column; background: #ffffff; }
+
+@media screen and (min-width: 992px) {
+    .detail-layout { flex-direction: row; }
+    .detail-img-col { width: 55%; min-height: 520px; border-bottom: none; border-right: 1px solid #eef2ff; }
+    .detail-content-col { width: 45%; padding: 42px 44px; }
+    .detail-img-col img { width: 100%; height: 100%; max-height: none; object-fit: cover; }
+}
 
 .detail-badge { display: inline-flex !important; align-items: center; margin-bottom: 15px; font-size: 0.85rem; font-weight: 800; padding: 6px 18px; border-radius: 20px; width: fit-content; color: white !important; border: none !important; }
 #detailTitle { font-size: 2rem; font-weight: 800; margin-bottom: 10px; line-height: 1.3; color: var(--color-dark); }
@@ -389,11 +706,29 @@ html, body { -ms-overflow-style: none; scrollbar-width: none; background-color: 
 /* =========================================
    10. Responsive Adjustments
    ========================================= */
+/* Utility truncation helpers for long filenames/titles */
+.truncate-1 { /* single-line ellipsis */
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+.truncate-2 { /* max 2 lines, graceful ellipsis */
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    word-break: break-word !important;
+}
+
 @media screen and (max-width: 992px) {
     .profile-card { grid-template-columns: 1fr; text-align: center; padding: 40px 25px; }
     .profile-image-side { order: -1; }
     .detail-item { flex-direction: column; align-items: center; text-align: center; }
     .prof-img-frame::before { display: none; } 
+    .detail-layout { flex-direction: column; }
+    .detail-img-col { border-bottom: 1px solid #f1f5f9; }
+    .detail-content-col { padding: 30px 24px; }
 }
 
 @media screen and (max-width: 768px) {
@@ -442,4 +777,324 @@ html, body { -ms-overflow-style: none; scrollbar-width: none; background-color: 
     #detailTitle { font-size: 1.6rem; }
     .detail-actions { flex-direction: column; gap: 12px; margin-top: 20px; }
     .detail-actions a { width: 100%; justify-content: center; flex: none; }
+}
+
+/* Mobile override: make truncate-2 single-line and expand item cards */
+@media screen and (max-width: 768px) {
+    .truncate-2 {
+        -webkit-line-clamp: 1 !important;
+        display: block !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+    .work-item-card { max-width: 100% !important; }
+}
+
+/* =========================================
+   11. การ์ดแสดงผลประเมินครูผู้ช่วย (หน้า Index) - โทนขาว-เทา เรียบหรู
+   ========================================= */
+.eval-front-card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 40px;
+    border: 1px solid #f1f5f9; /* ขอบสีเทาอ่อนมาก */
+    /* เพิ่มมิติของเงาให้การ์ดดูลอยเด่นขึ้นจากพื้นหลัง */
+    box-shadow: 0 15px 35px rgba(100, 116, 139, 0.08), 0 5px 15px rgba(0,0,0,0.02);
+    margin-bottom: 25px;
+    transition: transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* เพิ่มเส้นตกแต่งด้านบนการ์ดบางๆ ให้ดูมีดีเทล */
+.eval-front-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #e2e8f0 0%, #94a3b8 100%);
+    transition: height 0.3s ease;
+}
+
+.eval-front-card:hover { 
+    transform: translateY(-8px); 
+    box-shadow: 0 20px 45px rgba(100, 116, 139, 0.12); 
+    border-color: #cbd5e1; /* ตอนโฮเวอร์ขอบจะชัดขึ้นนิดหน่อย */
+}
+
+.eval-front-card-inner { 
+    display: flex; 
+    gap: 25px; 
+    align-items: flex-start; 
+}
+
+/* ปรับวงกลมตัวเลขให้เป็นโทนเทา-เงิน */
+.eval-front-card-number {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); 
+    color: #475569; /* สีเทาเข้ม */
+    min-width: 60px; 
+    height: 60px; 
+    border-radius: 50%; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    font-weight: 800; 
+    font-size: 1.6rem;
+    flex-shrink: 0;
+    /* เพิ่มเงาด้านในและขอบขาวให้ปุ่มดูนูนขึ้นมา */
+    box-shadow: inset 0 2px 4px rgba(255,255,255,0.8), 0 5px 15px rgba(100, 116, 139, 0.15);
+    border: 2px solid #ffffff;
+}
+
+.eval-front-card-content { 
+    flex: 1; 
+    min-width: 0; 
+}
+
+.eval-front-card-content h3 { 
+    font-size: 1.5rem; 
+    font-weight: 800; 
+    color: #334155; /* สีเทาเข้มเกือบดำ */
+    margin-bottom: 15px; 
+    line-height: 1.4; 
+}
+
+.eval-front-card-text { 
+    color: #64748b; /* สีเทากลาง */
+    font-family: 'Sarabun', 'Prompt', sans-serif;
+    text-align: left;
+    word-break: break-word; 
+}
+
+.eval-front-card-text p, 
+.eval-front-card-text span, 
+.eval-front-card-text div, 
+.eval-front-card-text li {
+    font-size: 1.05rem !important; 
+    line-height: 1.7 !important; 
+    color: #64748b !important;
+    font-family: 'Sarabun', 'Prompt', sans-serif !important;
+}
+
+.eval-front-card-text p { margin-top: 0 !important; margin-bottom: 10px !important; }
+.eval-front-card-text ul, .eval-front-card-text ol { margin-top: 5px; margin-bottom: 15px; padding-left: 25px; }
+
+.eval-front-img { 
+    width: 100%; 
+    max-width: 800px;
+    border-radius: 12px; 
+    margin-top: 20px; 
+    border: 1px solid #e2e8f0; 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.03); 
+    display: block;
+}
+
+/* =========================================
+   การตั้งค่าสำหรับหน้าจอมือถือ (Responsive)
+   ========================================= */
+@media screen and (max-width: 768px) {
+    .eval-front-card { 
+        padding: 30px 20px 25px; 
+        border-radius: 16px; 
+    }
+
+    .eval-front-card-inner { 
+        gap: 15px; 
+        flex-direction: column; 
+        align-items: flex-start; 
+    } 
+    
+    /* ในมือถือเปลี่ยนสีพื้นหลังปุ่มให้เข้มขึ้น เพื่อให้อ่านง่าย */
+    .eval-front-card-number { 
+        background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%); 
+        color: white !important; 
+        box-shadow: 0 5px 15px rgba(100, 116, 139, 0.3); 
+        margin-bottom: 5px; 
+    }
+    
+    .eval-front-card-content { text-align: left; width: 100%; }
+    .eval-front-card-content h3 { font-size: 1.35rem; margin-bottom: 12px; }
+    .eval-front-card-text { text-align: left; }
+
+    .eval-front-card-text p, 
+    .eval-front-card-text span, 
+    .eval-front-card-text div, 
+    .eval-front-card-text li {
+        font-size: 0.95rem !important; 
+        line-height: 1.5 !important; 
+        text-align: left !important;
+    }
+    
+    .eval-front-img { width: 100%; margin-top: 15px; }
+}
+
+
+/* =========================================
+   Table View สำหรับ Files Section (อิงจาก React Table)
+   ========================================= */
+
+/* ปรับคอนเทนเนอร์หลักของตาราง */
+.files-table-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 5%;
+    width: 100%;
+}
+
+/* กรอบตารางแบบมินิมอล (Card-like border) */
+.custom-table-wrapper {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    width: 100%;
+}
+
+.custom-file-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+/* หัวตาราง */
+.custom-file-table thead tr {
+    border-bottom: 1px solid #e2e8f0;
+    background-color: transparent;
+}
+
+.custom-file-table th {
+    padding: 16px 20px;
+    font-weight: 600;
+    color: #64748b;
+    font-size: 0.95rem;
+}
+
+/* แถวข้อมูลตาราง (Hover Effect) */
+.file-table-row {
+    border-bottom: 1px solid #f1f5f9;
+    transition: background-color 0.2s ease;
+}
+
+.file-table-row:hover {
+    background-color: #f8fafc; /* สีเทาอ่อนมากๆ เวลาเอาเมาส์ชี้ */
+}
+
+.file-table-row:last-child {
+    border-bottom: none;
+}
+
+.custom-file-table td {
+    padding: 16px 20px;
+    vertical-align: middle;
+    color: #475569;
+    font-size: 0.95rem;
+}
+
+/* Utility classes ในตาราง */
+.text-center { text-align: center !important; }
+.text-2xl { font-size: 1.5rem; }
+.font-medium { font-weight: 600; font-size: 1.05rem; }
+.text-dark { color: #0f172a; }
+
+.text-c7-pink { color: var(--c7-pink); }
+.text-c4-blue { color: var(--c4-blue); }
+.text-c2-purple { color: var(--c2-purple); }
+.text-c6-orange { color: var(--c6-orange); }
+.text-c1-teal { color: var(--c1-teal); }
+.text-c-other { color: #94a3b8; }
+
+/* Badge แสดงหมวดหมู่ (เหมือน React UI Component) */
+.cat-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: rgba(96, 176, 255, 0.15); /* bg-blue-500/15 */
+    color: var(--c4-blue);                 /* text-blue-700 */
+    border: 1px solid transparent;
+}
+.cat-badge.empty {
+    background: transparent;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+}
+
+/* ปุ่ม Action ดาวน์โหลดแบบมินิมอล (เหมือนปุ่ม Outline size="icon" ใน React) */
+.action-btn-download {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    color: #64748b;
+    background: transparent;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease-in-out;
+    text-decoration: none;
+    margin: 0 auto;
+}
+
+.action-btn-download:hover {
+    background: var(--c4-blue);
+    color: white;
+    border-color: var(--c4-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(96, 176, 255, 0.25);
+}
+
+/* =========================================
+   Responsive: ทำตารางให้ดูดีในหน้าจอมือถือ
+   (เปลี่ยนจากตารางเป็นลิสต์อัตโนมัติ)
+   ========================================= */
+@media screen and (max-width: 768px) {
+    .custom-file-table thead {
+        display: none; /* ซ่อนหัวตาราง */
+    }
+    .custom-file-table tbody .file-table-row {
+        display: flex;
+        flex-direction: column;
+        padding: 16px;
+        position: relative;
+    }
+    .custom-file-table td {
+        padding: 6px 0;
+        display: block;
+        text-align: left !important;
+        border: none;
+    }
+    
+    /* จัดตำแหน่ง Icon ให้อยู่ซ้ายสุด */
+    .custom-file-table td:first-child {
+        position: absolute;
+        top: 20px;
+        left: 16px;
+    }
+    
+    /* จัดตำแหน่งชื่อเอกสาร */
+    .custom-file-table td:nth-child(2) {
+        padding-left: 55px;
+        padding-right: 50px; /* เว้นที่ให้ปุ่มดาวน์โหลด */
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+    
+    /* จัดตำแหน่งหมวดหมู่ */
+    .custom-file-table td:nth-child(3) {
+        padding-left: 55px;
+    }
+    
+    /* จัดปุ่มดาวน์โหลดไปไว้ขวาบน */
+    .custom-file-table td:last-child {
+        position: absolute;
+        top: 20px;
+        right: 16px;
+        padding: 0;
+    }
 }
